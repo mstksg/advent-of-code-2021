@@ -5,13 +5,13 @@ import           AOC
 import           Control.Applicative
 import           Control.DeepSeq
 import           Control.Exception
+import           Control.Lens hiding  (argument)
 import           Control.Monad
 import           Control.Monad.Except
 import           Data.Char
 import           Data.Foldable
 import           Data.IORef
 import           Data.Maybe
-import           Lens.Micro
 import           Options.Applicative
 import           System.IO.Error
 import           Text.Printf

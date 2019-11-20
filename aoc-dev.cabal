@@ -24,6 +24,7 @@ source-repository head
 
 common common-options
   build-depends:       advent-of-code-api >=0.2.7
+                     , Cabal
                      , aeson
                      , ansi-terminal
                      , base >=4.7 && <5
@@ -31,26 +32,37 @@ common common-options
                      , containers
                      , criterion
                      , data-default-class
+                     , data-memocombinators
                      , deepseq
                      , directory
                      , filepath
                      , finite-typelits
+                     , foldl
+                     , groups
+                     , hashable
                      , haskeline
                      , haskell-names
-                     , Cabal
                      , haskell-src-exts
                      , hpack
+                     , lens
+                     , linear
                      , megaparsec
                      , microlens-th
                      , mtl
+                     , nonempty-containers
                      , pandoc
+                     , parallel
                      , parser-combinators
                      , profunctors
+                     , psqueues
+                     , semigroupoids
+                     , split
                      , template-haskell
                      , text
                      , th-abstraction
                      , time
                      , transformers
+                     , vector-sized
                      , yaml
 
   ghc-options:         -Wall
@@ -201,4 +213,3 @@ benchmark aoc-dev-bench
     , base >=4.7 && <5
     , mtl
   default-language: Haskell2010
-
