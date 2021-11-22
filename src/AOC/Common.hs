@@ -510,7 +510,7 @@ mulPoint :: Point -> Point -> Point
 mulPoint (V2 x y) (V2 u v) = V2 (x*u - y*v) (x*v + y*u)
 
 data Dir = North | East | South | West
-  deriving (Show, Eq, Ord, Generic, Enum)
+  deriving stock (Show, Eq, Ord, Generic, Enum)
 
 instance Hashable Dir
 instance NFData Dir
@@ -578,7 +578,8 @@ instance Abelian Dir
 -- | It's 'Point', but with a newtype wrapper so we have an 'Ord' that
 -- sorts by y first, then x
 newtype ScanPoint = SP { _getSP :: Point }
-  deriving (Eq, Show, Num, Generic)
+  deriving stock (Eq, Show, Generic)
+  deriving newtype Num
 
 instance Hashable ScanPoint
 instance NFData ScanPoint
@@ -630,7 +631,7 @@ instance (Ord k, Ord p) => Ixed (OrdPSQ.OrdPSQ k p v) where
 -- | Use a stream of tokens @a@ as the underlying parser stream.  Note that
 -- error messages for parser errors are going necessarily to be wonky.
 newtype TokStream a = TokStream { getTokStream :: [a] }
-  deriving (Ord, Eq, Show, Generic, Functor)
+  deriving stock (Ord, Eq, Show, Generic, Functor)
 
 instance Hashable a => Hashable (TokStream a)
 instance NFData a => NFData (TokStream a)

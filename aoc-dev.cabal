@@ -36,6 +36,7 @@ common common-options
                      , deepseq
                      , directory
                      , filepath
+                     , finitary
                      , finite-typelits
                      , foldl
                      , groups
