@@ -66,7 +66,7 @@ module AOC.Common (
   , digitToIntSafe
   , caeser
   , eitherItem
-  , getDown
+  -- , getDown
   , toNatural
   -- * Parsers
   , TokStream(..)
@@ -115,7 +115,6 @@ import           Data.Function
 import           Data.Group
 import           Data.Hashable
 import           Data.IntMap                        (IntMap)
-import           Data.List
 import           Data.List.NonEmpty                 (NonEmpty)
 import           Data.List.Split
 import           Data.Map                           (Map)
@@ -139,6 +138,7 @@ import qualified Control.Foldl                      as F
 import qualified Control.Monad.Combinators          as P
 import qualified Data.Finitary                      as F
 import qualified Data.IntMap                        as IM
+import qualified Data.List                          as L
 import qualified Data.List.NonEmpty                 as NE
 import qualified Data.Map                           as M
 import qualified Data.Map.NonEmpty                  as NEM
@@ -164,7 +164,7 @@ drop' n (x:xs) = x `seq` drop' (n - 1) xs
 
 -- | Iterate until a 'Nothing' is produced
 iterateMaybe :: (a -> Maybe a) -> a -> [a]
-iterateMaybe f x0 = x0 : unfoldr (fmap dup . f) x0
+iterateMaybe f x0 = x0 : L.unfoldr (fmap dup . f) x0
 
 (!?) :: [a] -> Int -> Maybe a
 []     !? _ = Nothing
@@ -214,11 +214,11 @@ dup x = (x, x)
 
 -- | 'scanl' generalized to all 'Traversable'.
 scanlT :: Traversable t => (b -> a -> b) -> b -> t a -> t b
-scanlT f z = snd . mapAccumL (\x -> dup . f x) z
+scanlT f z = snd . L.mapAccumL (\x -> dup . f x) z
 
 -- | 'scanr' generalized to all 'Traversable'.
 scanrT :: Traversable t => (a -> b -> b) -> b -> t a -> t b
-scanrT f z = snd . mapAccumR (\x -> dup . flip f x) z
+scanrT f z = snd . L.mapAccumR (\x -> dup . flip f x) z
 
 -- | Lazily find the first repeated item.
 firstRepeated :: Ord a => [a] -> Maybe a
@@ -267,8 +267,8 @@ eitherItem :: Lens' (Either a a) a
 eitherItem f (Left x) = Left <$> f x
 eitherItem f (Right x) = Right <$> f x
 
-getDown :: Down a -> a
-getDown (Down x) = x
+-- getDown :: Down a -> a
+-- getDown (Down x) = x
 
 splitWord :: Word8 -> (Finite 16, Finite 16)
 splitWord = swap . separateProduct . F.toFinite
@@ -642,22 +642,22 @@ instance (Ord a, Show a) => P.Stream (TokStream a) where
     tokensToChunk _ = Seq.fromList
     chunkToTokens _ = toList
     chunkLength   _ = Seq.length
-    take1_          = coerce . Data.List.uncons . getTokStream
+    take1_          = coerce . L.uncons . getTokStream
     takeN_        n (TokStream xs) = bimap Seq.fromList TokStream (splitAt n xs)
                                   <$ guard (not (null xs))
     takeWhile_ p = bimap Seq.fromList TokStream . span p . getTokStream
-    showTokens _ = show
-    reachOffset o ps = ("<token stream>", ps')
-      where
-        step = o - P.pstateOffset ps
-        ps' = ps { P.pstateOffset    = o
-                 , P.pstateInput     = TokStream ys
-                 , P.pstateSourcePos = (P.pstateSourcePos ps) {
-                      P.sourceColumn = P.sourceColumn (P.pstateSourcePos ps)
-                                    <> P.mkPos step
-                    }
-                 }
-        ys = drop step (getTokStream (P.pstateInput ps))
+    -- showTokens _ = show
+    -- reachOffset o ps = ("<token stream>", ps')
+    --   where
+    --     step = o - P.pstateOffset ps
+    --     ps' = ps { P.pstateOffset    = o
+    --              , P.pstateInput     = TokStream ys
+    --              , P.pstateSourcePos = (P.pstateSourcePos ps) {
+    --                   P.sourceColumn = P.sourceColumn (P.pstateSourcePos ps)
+    --                                 <> P.mkPos step
+    --                 }
+    --              }
+    --     ys = drop step (getTokStream (P.pstateInput ps))
 
 -- | Parse a stream of tokens @s@ purely, returning 'Either'
 parseTokStream
