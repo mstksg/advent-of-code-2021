@@ -63,7 +63,7 @@ import qualified System.Console.Haskeline as H
 data TestSpec = TSAll
               | TSDayAll  { _tsDay  :: Day           }
               | TSDayPart { _tsSpec :: ChallengeSpec }
-  deriving Show
+  deriving stock Show
 
 -- | Options for 'mainRun'.
 data MainRunOpts = MRO { _mroSpec   :: !TestSpec
@@ -80,7 +80,7 @@ makeClassy ''MainRunOpts
 data MainViewOpts = MVO { _mvoSpec :: !TestSpec
                         , _mvoWait :: !Bool
                         }
-  deriving Show
+  deriving stock Show
 
 makeClassy ''MainViewOpts
 
@@ -90,7 +90,7 @@ data MainSubmitOpts = MSO { _msoSpec  :: !ChallengeSpec
                           , _msoForce :: !Bool    -- ^ Force submission even if bad?  (Default: False)
                           , _msoLock  :: !Bool    -- ^ Lock answer if submission succeeded?  (Default: True)
                           }
-  deriving Show
+  deriving stock Show
 
 makeClassy ''MainSubmitOpts
 

@@ -32,7 +32,7 @@ data Config = Cfg
     { _cfgSession :: Maybe String     -- ^ Default: 'Nothing'
     , _cfgYear    :: Integer          -- ^ Default: 2015
     }
-  deriving (Generic)
+  deriving stock (Generic)
 
 -- | No session key, and 2015.
 instance Default Config where

@@ -80,7 +80,7 @@ pattern MkSomeSol s <- (toHelp->SSH s)
 -- | Errors that might happen when running a ':~>' on some input.
 data SolutionError = SEParse
                    | SESolve
-  deriving (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Ord, Generic)
 
 instance NFData SolutionError
 

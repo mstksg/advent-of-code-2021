@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP             #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 -- |
@@ -31,31 +32,37 @@ import           AOC.Solver
 import           Advent
 import           Control.Applicative
 import           Control.DeepSeq
-import           Language.Haskell.TH.Datatype
 import           Control.Monad
 import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Maybe
 import           Data.Bifunctor
 import           Data.Data
-import           Data.Map                   (Map)
+import           Data.Foldable
+import           Data.Function
+import           Data.Map                               (Map)
 import           Data.Maybe
 import           Data.Traversable
 import           Data.Void
 import           GHC.Exts
-import           Language.Haskell.Exts      as E
+import           Language.Haskell.Exts                  as E
 import           Language.Haskell.Names
-import           Language.Haskell.TH        as TH
-import           Language.Haskell.TH.Syntax (TExp(..))
+import           Language.Haskell.TH                    as TH
+import           Language.Haskell.TH.Datatype
+import           Language.Haskell.TH.Syntax             (TExp(..))
 import           Prelude
 import           System.Directory
 import           System.FilePath
 import           Text.Printf
-import qualified Data.List.NonEmpty         as NE
-import qualified Data.Map                   as M
-import qualified Hpack.Config               as H
-import qualified Text.Megaparsec            as P
-import qualified Text.Megaparsec.Char       as P
-import qualified Text.Megaparsec.Char.Lexer as PL
+import qualified Data.List.NonEmpty                     as NE
+import qualified Distribution.Pretty as C
+import qualified Data.Map                               as M
+import qualified Distribution.PackageDescription        as C
+import qualified Distribution.PackageDescription.Parsec as C
+import qualified Distribution.Simple.Utils              as C
+import qualified Distribution.Verbosity                 as C
+import qualified Text.Megaparsec                        as P
+import qualified Text.Megaparsec.Char                   as P
+import qualified Text.Megaparsec.Char.Lexer             as PL
 
 -- | Big quick escape hatch if things explode in the middle of solving.
 -- This will disable the check for NFData when using 'MkSomeSol' and assume
@@ -69,7 +76,7 @@ checkIfNFData = True
 data ChallengeSpec = CS { _csDay  :: Day
                         , _csPart :: Part
                         }
-  deriving (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord)
 
 -- | A map of days to parts to solutions.
 type ChallengeMap = Map Day (Map Part SomeSolution)
@@ -100,8 +107,13 @@ type Parser = P.Parsec Void String
 -- a lower-case letter corresponding to the part of the challenge.
 --
 -- See 'mkChallengeMap' for a description of usage.
+#if MIN_VERSION_template_haskell(2,17,0)
 solutionList :: FilePath -> Code Q [(Day, (Part, SomeSolution))]
 solutionList dir = Code $
+#else
+solutionList :: FilePath -> Q (TH.TExp [(Day, (Part, SomeSolution))])
+solutionList dir =
+#endif
         fmap (TExp . ListE)
       . traverse (fmap unType . specExp)
     =<< runIO (getChallengeSpecs dir)
@@ -126,16 +138,21 @@ specExp s@(CS d p) = do
         pure $ if isNF
                  then 'MkSomeSolNF
                  else 'MkSomeSolWH
-    pure $ TExp $ TupE
-      [ Just $ VarE 'mkDay_ `AppE` LitE (IntegerL (dayInt d))
-      , Just $ TupE
-          [ Just $ ConE (partCon p)
-          , Just $ ConE con `AppE` VarE (mkName (specName s))
+    pure $ TExp $ tTupE
+      [ VarE 'mkDay_ `AppE` LitE (IntegerL (dayInt d))
+      , tTupE
+          [ ConE (partCon p)
+          , ConE con `AppE` VarE (mkName (specName s))
           ]
       ]
   where
     partCon Part1 = 'Part1
     partCon Part2 = 'Part2
+#if MIN_VERSION_template_haskell(2,16,0)
+    tTupE = TupE . fmap Just
+#else
+    tTupE = TupE
+#endif
 
 specName :: ChallengeSpec -> String
 specName (CS d p) = printf "day%02d%c" (dayInt d) (partChar p)
@@ -159,9 +176,14 @@ getChallengeSpecs dir = do
 
 defaultExtensions :: IO [E.Extension]
 defaultExtensions = do
-    Right H.DecodeResult{..} <- H.readPackageConfig H.defaultDecodeOptions
-    Just H.Section{..} <- pure $ H.packageLibrary decodeResultPackage
-    pure $ parseExtension <$> sectionDefaultExtensions
+    gpd <- C.readGenericPackageDescription C.silent =<< C.defaultPackageDesc C.silent
+    pure . map reExtension . foldMap (C.defaultExtensions . C.libBuildInfo) $ gpdLibraries gpd
+  where
+    gpdLibraries gpd =
+        Data.Foldable.toList (C.library (C.packageDescription gpd))
+     ++ foldMap Data.Foldable.toList (C.condLibrary gpd)
+     ++ foldMap (foldMap Data.Foldable.toList) (C.condSubLibraries gpd)
+    reExtension = parseExtension . C.prettyShow
 
 moduleSolutions :: (Data l, Eq l) => [Module l] -> [ChallengeSpec]
 moduleSolutions = (foldMap . foldMap) (maybeToList . isSolution)

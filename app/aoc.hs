@@ -10,13 +10,13 @@ import           Control.Monad.Except
 import           Data.Char
 import           Data.Foldable
 import           Data.IORef
-import           Data.List
 import           Data.Maybe
 import           Lens.Micro
 import           Options.Applicative
 import           System.IO.Error
 import           Text.Printf
 import           Text.Read
+import qualified Data.List            as L
 import qualified Data.Map             as M
 import qualified System.Console.ANSI  as ANSI
 
@@ -36,7 +36,7 @@ main = do
                <> header "aoc-dev - Advent of Code interactive development environment"
                <> progDesc ("Run, test, bench, challenges from Advent of Code, and view prompts. Available days: " ++ availableDays)
                 )
-    cfg@Cfg{..} <- configFile $ fromMaybe defConfPath _oConfig
+    cfg <- configFile $ fromMaybe defConfPath _oConfig
     out <- runExceptT $ case _oMode of
       MRun    mro -> void $ mainRun  cfg mro
       MView   mvo -> void $ mainView cfg mvo
@@ -46,7 +46,7 @@ main = do
         putStrLn "[ERROR]"
       mapM_ putStrLn e
   where
-    availableDays = intercalate ", "
+    availableDays = L.intercalate ", "
                   . map (show . dayInt)
                   . M.keys
                   $ challengeMap

@@ -70,7 +70,7 @@ data ChallengePaths = CP { _cpPrompt    :: !FilePath
                          , _cpTests     :: !FilePath
                          , _cpLog       :: !FilePath
                          }
-  deriving Show
+  deriving stock Show
 
 -- | A record of data (test inputs, answers) corresponding to a specific
 -- challenge.
@@ -260,11 +260,11 @@ type Parser = MP.Parsec Void String
 data TestMeta = TM { _tmAnswer :: Maybe String
                    , _tmData   :: Map String Dynamic
                    }
-  deriving Show
+  deriving stock Show
 
 data MetaLine = MLData   String Dynamic
               | MLAnswer String
-  deriving Show
+  deriving stock Show
 
 
 parseTests :: Parser [(String, TestMeta)]
