@@ -35,7 +35,7 @@ import           Data.Functor              as P
 import           Data.IntMap               as P (IntMap)
 import           Data.IntSet               as P (IntSet)
 import           Data.Kind                 as P
-import           Data.List                 as P
+import qualified Data.List                 as P
 import           Data.List.NonEmpty        as P (NonEmpty(..), nonEmpty)
 import           Data.Map                  as P (Map)
 import           Data.Maybe                as P

@@ -1,0 +1,309 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: caed1f3774882334941126e63efa05febf1972dc0df0ec4db89d88b0eea3ba5f
+
+name:           aoc-dev
+version:        0.1.0.0
+synopsis:       Development environment for Advent of Code challenges
+description:    Scaffolding for an integrated development environment for Advent of Code
+                challenges.  Includes auto-runner, prompt displays and countdowns, and
+                integrated submissions.
+category:       Web
+homepage:       https://github.com/mstksg/advent-of-code-dev#readme
+bug-reports:    https://github.com/mstksg/advent-of-code-dev/issues
+author:         Justin Le
+maintainer:     justin@jle.im
+copyright:      (c) Justin Le 2018
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/mstksg/advent-of-code-dev
+
+library
+  exposed-modules:
+      AOC
+      AOC.Challenge
+      AOC.Challenge.Day01
+      AOC.Challenge.Day02
+      AOC.Challenge.Day03
+      AOC.Challenge.Day04
+      AOC.Challenge.Day05
+      AOC.Challenge.Day06
+      AOC.Challenge.Day07
+      AOC.Challenge.Day08
+      AOC.Challenge.Day09
+      AOC.Challenge.Day10
+      AOC.Challenge.Day11
+      AOC.Challenge.Day12
+      AOC.Challenge.Day13
+      AOC.Challenge.Day14
+      AOC.Challenge.Day15
+      AOC.Challenge.Day16
+      AOC.Challenge.Day17
+      AOC.Challenge.Day18
+      AOC.Challenge.Day19
+      AOC.Challenge.Day20
+      AOC.Challenge.Day21
+      AOC.Challenge.Day22
+      AOC.Challenge.Day23
+      AOC.Challenge.Day24
+      AOC.Challenge.Day25
+      AOC.Common
+      AOC.Discover
+      AOC.Prelude
+      AOC.Run
+      AOC.Run.Config
+      AOC.Run.Interactive
+      AOC.Run.Load
+      AOC.Solver
+      AOC.Util
+      AOC.Util.DynoMap
+  other-modules:
+      Paths_aoc_dev
+  hs-source-dirs:
+      src
+  default-extensions:
+      AllowAmbiguousTypes
+      ApplicativeDo
+      BangPatterns
+      BlockArguments
+      DataKinds
+      DeriveFoldable
+      DeriveFunctor
+      DeriveGeneric
+      DeriveTraversable
+      EmptyCase
+      FlexibleContexts
+      FlexibleInstances
+      FunctionalDependencies
+      GADTs
+      GeneralizedNewtypeDeriving
+      ImplicitParams
+      KindSignatures
+      LambdaCase
+      MonadComprehensions
+      MultiParamTypeClasses
+      MultiWayIf
+      NumDecimals
+      OverloadedLabels
+      PartialTypeSignatures
+      PatternGuards
+      PatternSynonyms
+      PolyKinds
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TupleSections
+      TypeApplications
+      TypeInType
+      TypeOperators
+      UndecidableInstances
+      ViewPatterns
+  ghc-options: -Wall -Wcompat -Wno-partial-type-signatures -Wredundant-constraints
+  build-depends:
+      advent-of-code-api >=0.2.7
+    , aeson
+    , ansi-terminal
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , criterion
+    , data-default-class
+    , deepseq
+    , directory
+    , filepath
+    , finite-typelits
+    , haskeline
+    , haskell-names
+    , haskell-src-exts
+    , hpack
+    , megaparsec
+    , microlens-th
+    , mtl
+    , pandoc
+    , parser-combinators
+    , profunctors
+    , template-haskell
+    , text
+    , th-abstraction
+    , time
+    , transformers
+    , yaml
+  default-language: Haskell2010
+
+executable aoc-dev
+  main-is: aoc.hs
+  other-modules:
+      Paths_aoc_dev
+  hs-source-dirs:
+      app
+  default-extensions:
+      AllowAmbiguousTypes
+      ApplicativeDo
+      BangPatterns
+      BlockArguments
+      DataKinds
+      DeriveFoldable
+      DeriveFunctor
+      DeriveGeneric
+      DeriveTraversable
+      EmptyCase
+      FlexibleContexts
+      FlexibleInstances
+      FunctionalDependencies
+      GADTs
+      GeneralizedNewtypeDeriving
+      ImplicitParams
+      KindSignatures
+      LambdaCase
+      MonadComprehensions
+      MultiParamTypeClasses
+      MultiWayIf
+      NumDecimals
+      OverloadedLabels
+      PartialTypeSignatures
+      PatternGuards
+      PatternSynonyms
+      PolyKinds
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TupleSections
+      TypeApplications
+      TypeInType
+      TypeOperators
+      UndecidableInstances
+      ViewPatterns
+  ghc-options: -Wall -Wcompat -Wno-partial-type-signatures -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      ansi-terminal
+    , aoc-dev
+    , base >=4.7 && <5
+    , containers
+    , deepseq
+    , finite-typelits
+    , microlens
+    , mtl
+    , optparse-applicative
+  default-language: Haskell2010
+
+test-suite aoc-dev-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_aoc_dev
+  hs-source-dirs:
+      test
+  default-extensions:
+      AllowAmbiguousTypes
+      ApplicativeDo
+      BangPatterns
+      BlockArguments
+      DataKinds
+      DeriveFoldable
+      DeriveFunctor
+      DeriveGeneric
+      DeriveTraversable
+      EmptyCase
+      FlexibleContexts
+      FlexibleInstances
+      FunctionalDependencies
+      GADTs
+      GeneralizedNewtypeDeriving
+      ImplicitParams
+      KindSignatures
+      LambdaCase
+      MonadComprehensions
+      MultiParamTypeClasses
+      MultiWayIf
+      NumDecimals
+      OverloadedLabels
+      PartialTypeSignatures
+      PatternGuards
+      PatternSynonyms
+      PolyKinds
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TupleSections
+      TypeApplications
+      TypeInType
+      TypeOperators
+      UndecidableInstances
+      ViewPatterns
+  ghc-options: -Wall -Wcompat -Wno-partial-type-signatures -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      ansi-terminal
+    , aoc-dev
+    , base >=4.7 && <5
+    , mtl
+  default-language: Haskell2010
+
+benchmark aoc-dev-bench
+  type: exitcode-stdio-1.0
+  main-is: Bench.hs
+  other-modules:
+      Paths_aoc_dev
+  hs-source-dirs:
+      bench
+  default-extensions:
+      AllowAmbiguousTypes
+      ApplicativeDo
+      BangPatterns
+      BlockArguments
+      DataKinds
+      DeriveFoldable
+      DeriveFunctor
+      DeriveGeneric
+      DeriveTraversable
+      EmptyCase
+      FlexibleContexts
+      FlexibleInstances
+      FunctionalDependencies
+      GADTs
+      GeneralizedNewtypeDeriving
+      ImplicitParams
+      KindSignatures
+      LambdaCase
+      MonadComprehensions
+      MultiParamTypeClasses
+      MultiWayIf
+      NumDecimals
+      OverloadedLabels
+      PartialTypeSignatures
+      PatternGuards
+      PatternSynonyms
+      PolyKinds
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TupleSections
+      TypeApplications
+      TypeInType
+      TypeOperators
+      UndecidableInstances
+      ViewPatterns
+  ghc-options: -Wall -Wcompat -Wno-partial-type-signatures -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N -O2
+  build-depends:
+      aoc-dev
+    , base >=4.7 && <5
+    , mtl
+  default-language: Haskell2010

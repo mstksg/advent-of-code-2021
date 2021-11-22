@@ -1,5 +1,4 @@
 .stack-work/
-/*.cabal
 *~
 /data
 /prompt
@@ -9,3 +8,4 @@
 /tmp
 /scratch
 _*
+/dist-newstyle
