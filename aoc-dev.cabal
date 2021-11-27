@@ -29,6 +29,8 @@ common common-options
                      , ansi-terminal
                      , base >=4.7 && <5
                      , bytestring
+                     , comonad
+                     , conduino
                      , constraints
                      , constraints-extras
                      , containers
@@ -38,10 +40,13 @@ common common-options
                      , deepseq
                      , dependent-sum
                      , directory
+                     , fgl
                      , filepath
+                     , fin
                      , finitary
                      , finite-typelits
                      , foldl
+                     , ghc-typelits-natnormalise
                      , groups
                      , hashable
                      , haskeline
@@ -59,6 +64,7 @@ common common-options
                      , parser-combinators
                      , profunctors
                      , psqueues
+                     , recursion-schemes
                      , semigroupoids
                      , split
                      , tagsoup
@@ -67,6 +73,8 @@ common common-options
                      , th-abstraction
                      , time
                      , transformers
+                     , vector
+                     , vector-algorithms
                      , vector-sized
                      , yaml
 
