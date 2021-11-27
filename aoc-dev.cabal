@@ -24,20 +24,23 @@ source-repository head
 
 common common-options
   build-depends:       advent-of-code-api >=0.2.7
+                     , Cabal
                      , aeson
                      , ansi-terminal
                      , base >=4.7 && <5
                      , bytestring
+                     , constraints
+                     , constraints-extras
                      , containers
                      , criterion
                      , data-default-class
                      , deepseq
+                     , dependent-sum
                      , directory
                      , filepath
                      , finite-typelits
                      , haskeline
                      , haskell-names
-                     , Cabal
                      , haskell-src-exts
                      , hpack
                      , megaparsec
@@ -46,6 +49,7 @@ common common-options
                      , pandoc
                      , parser-combinators
                      , profunctors
+                     , tagsoup
                      , template-haskell
                      , text
                      , th-abstraction
