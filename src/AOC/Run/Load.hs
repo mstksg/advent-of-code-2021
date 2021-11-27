@@ -47,15 +47,9 @@ import           Control.Monad
 import           Control.Monad.Except
 import           Data.Bifunctor
 import           Data.Char
-import           Data.Constraint
-import           Data.Constraint.Compose
-import           Data.Constraint.Extras
 import           Data.Dependent.Sum
-import           Data.Dynamic
 import           Data.Foldable
 import           Data.Functor.Identity
-import           Data.GADT.Show
-import           Data.Kind
 import           Data.Map                  (Map)
 import           Data.Maybe
 import           Data.Text                 (Text)
@@ -72,7 +66,6 @@ import qualified Control.Monad.Combinators as MP
 import qualified Data.Map                  as M
 import qualified Data.Text                 as T
 import qualified Data.Text.IO              as T
-import qualified Text.HTML.TagSoup         as H
 import qualified Text.HTML.TagSoup.Tree    as H
 import qualified Text.Megaparsec           as MP
 import qualified Text.Megaparsec.Char      as MP

@@ -32,16 +32,10 @@ module AOC.Solver (
 import           AOC.Util
 import           AOC.Util.DynoMap
 import           Control.DeepSeq
-import           Data.Constraint
-import           Data.Constraint.Compose
-import           Data.Constraint.Extras
 import           Data.Dependent.Sum
-import           Data.Dynamic
 import           Data.Functor.Identity
-import           Data.GADT.Show
-import           Data.Kind
-import           Data.Map                (Map)
-import           GHC.Generics            (Generic)
+import           Data.Map                   (Map)
+import           GHC.Generics               (Generic)
 
 -- | Abstracting over the type of a challenge solver to help with cleaner
 -- solutions.

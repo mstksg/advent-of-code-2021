@@ -13,7 +13,6 @@ import           Data.Constraint
 import           Data.Constraint.Compose
 import           Data.Constraint.Extras
 import           Data.Dependent.Sum
-import           Data.Dynamic
 import           Data.Functor.Identity
 import           Data.GADT.Compare
 import           Data.GADT.Show
