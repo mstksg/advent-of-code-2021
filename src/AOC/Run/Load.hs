@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications  #-}
+{-# LANGUAGE TypeFamilies      #-}
 
 -- |
 -- Module      : AOC.Run.Load
@@ -28,11 +29,16 @@ module AOC.Run.Load (
   -- * Parsers
   , parseMeta
   , parseTests
+  -- * Printers
+  , printMeta
+  , printTests
   ) where
 
 import           AOC.Challenge
 import           AOC.Util
+import           AOC.Util.DynoMap
 import           Advent
+import           Advent.API
 import           Control.Applicative
 import           Control.Concurrent
 import           Control.DeepSeq
@@ -41,8 +47,15 @@ import           Control.Monad
 import           Control.Monad.Except
 import           Data.Bifunctor
 import           Data.Char
+import           Data.Constraint
+import           Data.Constraint.Compose
+import           Data.Constraint.Extras
+import           Data.Dependent.Sum
 import           Data.Dynamic
 import           Data.Foldable
+import           Data.Functor.Identity
+import           Data.GADT.Show
+import           Data.Kind
 import           Data.Map                  (Map)
 import           Data.Maybe
 import           Data.Text                 (Text)
@@ -59,35 +72,40 @@ import qualified Control.Monad.Combinators as MP
 import qualified Data.Map                  as M
 import qualified Data.Text                 as T
 import qualified Data.Text.IO              as T
+import qualified Text.HTML.TagSoup         as H
+import qualified Text.HTML.TagSoup.Tree    as H
 import qualified Text.Megaparsec           as MP
 import qualified Text.Megaparsec.Char      as MP
 import qualified Text.Pandoc               as P
 
 -- | A record of paths corresponding to a specific challenge.
-data ChallengePaths = CP { _cpPrompt    :: !FilePath
-                         , _cpInput     :: !FilePath
-                         , _cpAnswer    :: !FilePath
-                         , _cpTests     :: !FilePath
-                         , _cpLog       :: !FilePath
+data ChallengePaths = CP { _cpPrompt     :: !FilePath
+                         , _cpCodeBlocks :: !FilePath
+                         , _cpInput      :: !FilePath
+                         , _cpAnswer     :: !FilePath
+                         , _cpTests      :: !FilePath
+                         , _cpLog        :: !FilePath
                          }
   deriving stock Show
 
 -- | A record of data (test inputs, answers) corresponding to a specific
 -- challenge.
-data ChallengeData = CD { _cdPrompt :: !(Either [String] Text  )
-                        , _cdInput  :: !(Either [String] String)
-                        , _cdAnswer :: !(Maybe String)
-                        , _cdTests  :: ![(String, TestMeta)]
+data ChallengeData = CD { _cdPrompt     :: !(Either [String] Text)
+                        , _cdCodeBlocks :: !(Either [String] [Text])
+                        , _cdInput      :: !(Either [String] String)
+                        , _cdAnswer     :: !(Maybe String)
+                        , _cdTests      :: ![(String, TestMeta)]
                         }
 
 -- | Generate a 'ChallengePaths' from a specification of a challenge.
 challengePaths :: Integer -> ChallengeSpec -> ChallengePaths
 challengePaths y (CS d p) = CP
-    { _cpPrompt    = "prompt"          </> printf "%02d%c" d' p' <.> "md"
-    , _cpInput     = "data"            </> printf "%02d" d'      <.> "txt"
-    , _cpAnswer    = "data/ans"        </> printf "%02d%c" d' p' <.> "txt"
-    , _cpTests     = "test-data"       </> printf "%04d/%02d%c" y d' p' <.> "txt"
-    , _cpLog       = "logs/submission" </> printf "%02d%c" d' p' <.> "txt"
+    { _cpPrompt     = "prompt"           </> printf "%02d%c" d' p' <.> "md"
+    , _cpCodeBlocks = "data/code-blocks" </> printf "%02d%c" d' p' <.> "txt"
+    , _cpInput      = "data"             </> printf "%02d" d'      <.> "txt"
+    , _cpAnswer     = "data/ans"         </> printf "%02d%c" d' p' <.> "txt"
+    , _cpTests      = "test-data"        </> printf "%04d/%02d%c" y d' p' <.> "txt"
+    , _cpLog        = "logs/submission"  </> printf "%02d%c" d' p' <.> "txt"
     }
   where
     d' = dayInt d
@@ -96,7 +114,7 @@ challengePaths y (CS d p) = CP
 makeChallengeDirs :: ChallengePaths -> IO ()
 makeChallengeDirs CP{..} =
     mapM_ (createDirectoryIfMissing True . takeDirectory)
-          [_cpPrompt, _cpInput, _cpAnswer, _cpTests, _cpLog]
+          [_cpPrompt, _cpCodeBlocks, _cpInput, _cpAnswer, _cpTests, _cpLog]
 
 -- | Load data associated with a challenge from a given specification.
 -- Will fetch answers online and cache if required (and if giten a session
@@ -113,6 +131,11 @@ challengeData sess yr spec = do
           =<< liftIO (readFileMaybe _cpInput)
       , fetchInput
       ]
+    blocks <- runExceptT . asum $
+      [ maybeToEither [printf "Input file not found at %s" _cpCodeBlocks]
+          =<< liftIO (fmap (T.splitOn codeBlockSep . T.pack) <$> readFileMaybe _cpCodeBlocks)
+      , fetchCodeBlocks
+      ]
     prompt <- runExceptT . asum $
       [ maybeToEither [printf "Prompt file not found at %s" _cpPrompt]
           =<< liftIO (fmap T.pack <$> readFileMaybe _cpPrompt)
@@ -125,10 +148,11 @@ challengeData sess yr spec = do
                   Left e  -> [] <$ putStrLn (MP.errorBundlePretty e)
                   Right r -> pure r
     return CD
-      { _cdPrompt = prompt
-      , _cdInput  = inp
-      , _cdAnswer = ans
-      , _cdTests  = ts
+      { _cdPrompt     = prompt
+      , _cdCodeBlocks = blocks
+      , _cdInput      = inp
+      , _cdAnswer     = ans
+      , _cdTests      = ts
       }
   where
     ps@CP{..} = challengePaths yr spec
@@ -164,20 +188,23 @@ challengeData sess yr spec = do
         e = case sess of
           Just _  -> "Part not yet released"
           Nothing -> "Part not yet released, or may require session key"
-      -- where
-      --   go (inp:meta:xs) =
-
-        -- go [] = []
-    -- parseTests xs = case break (">>>" `isPrefixOf`) xs of
-    --   (inp,[])
-    --     | null (strip (unlines inp))  -> []
-    --     | otherwise -> [(unlines inp, Nothing)]
-    --   (inp,(strip.drop 4->ans):rest)
-    --     | null (strip (unlines inp))  -> parseTests rest
-    --     | otherwise ->
-    --         let ans' = ans <$ guard (not (null ans))
-    --         in  (unlines inp, ans') : parseTests rest
-
+    fetchCodeBlocks :: ExceptT [String] IO [Text]
+    fetchCodeBlocks = do
+        prompts <- liftEither . first showAoCError
+               =<< liftIO (runAoC opts a)
+        promptH  <- maybeToEither [e]
+                 . M.lookup (_csPart spec)
+                 $ prompts
+        let blocks = pullCodeBlocks promptH
+        liftIO $ T.writeFile _cpCodeBlocks $ T.intercalate codeBlockSep blocks
+        pure blocks
+      where
+        opts = defaultAoCOpts yr $ fold sess
+        a = AoCPrompt $ _csDay spec
+        e = case sess of
+          Just _  -> "Part not yet released"
+          Nothing -> "Part not yet released, or may require session key"
+    codeBlockSep = "\n>>>>>>>>>>>>\n"
 
 showAoCError :: AoCError -> [String]
 showAoCError = \case
@@ -245,46 +272,50 @@ htmlToMarkdown pretty html = first ((:[]) . show) . P.runPure $ do
          . P.disableExtension P.Ext_smart
          $ P.pandocExtensions
 
-
-
-
+pullCodeBlocks :: Text -> [Text]
+pullCodeBlocks = concatMap pullEm . processHTML "code"
+  where
+    pullEm :: Text -> [Text]
+    pullEm str = fmap H.renderTree $ concat cleared : ems
+      where
+        (ems, cleared) = traverse go (H.parseTree str)
+        go br = case br of
+          H.TagBranch b _ xs
+            | b == "em" -> ([xs], xs)
+          _ -> ([], [br])
 
 
 type Parser = MP.Parsec Void String
 
-
-
-
-
-
 data TestMeta = TM { _tmAnswer :: Maybe String
-                   , _tmData   :: Map String Dynamic
+                   , _tmData   :: Map String (DSum TestType Identity)
                    }
   deriving stock Show
-
-data MetaLine = MLData   String Dynamic
-              | MLAnswer String
-  deriving stock Show
-
 
 parseTests :: Parser [(String, TestMeta)]
 parseTests = MP.many parseTest <* MP.eof
   where
     parseTest = do
-      inp <- MP.manyTill MP.anySingle $ MP.lookAhead (MP.string ">>>")
+      inp <- MP.manyTill MP.anySingle $ MP.lookAhead (MP.string "\n>>>")
+      _   <- MP.char '\n'
       met <- optional (MP.try parseMeta) MP.<?> "Metadata Block"
       pure (inp, fromMaybe (TM Nothing M.empty) met)
+
+printTests :: [(String, TestMeta)] -> Text
+printTests = T.intercalate "\n" . concatMap (\(x, y) -> T.pack x : printMeta y)
 
 parseMeta :: Parser TestMeta
 parseMeta = do
     dats <- MP.many (MP.try parseData) MP.<?> "Data Block"
-    ans  <- optional (MP.try parseAnswer) MP.<?> "Expected Answer"
+    ans  <- parseAnswer MP.<?> "Expected Answer"
     pure $ TM ans (M.fromList dats)
   where
-    parseAnswer = MP.string ">>>"
-               *> MP.space1
-               *> MP.many (MP.noneOf ['\n'])
-               <* "\n"
+    parseAnswer =
+      MP.string ">>>" *>
+      asum
+        [ Just <$> MP.try (MP.space1 *> MP.many (MP.noneOf ['\n']) <* "\n")
+        , Nothing <$ (MP.space *> "\n")
+        ]
     parseData = do
       MP.string ">>>"
       sym <- MP.manyTill (MP.try MP.letterChar)   (MP.try (MP.char ':'))
@@ -292,9 +323,23 @@ parseMeta = do
       typ <- MP.many     (MP.try MP.letterChar)
       MP.space
       case toLower <$> typ of
-        "int"    -> maybe (fail "Could not parse metadata value") (pure . (sym,) . toDyn)
-                  . readMaybe @Int
+        "int"    -> maybe (fail "Could not parse metadata value") (pure . (sym,) . (TTInt :=>) . Identity)
+                  . readMaybe
                   $ val
-        "string" -> pure (sym, toDyn val)
+        "string" -> pure (sym, TTString :=> Identity val)
         _        -> fail $ "Unrecognized type " ++ typ
 
+printMeta :: TestMeta -> [Text]
+printMeta TM{..} =
+       map printData (M.toList _tmData)
+    <> [case _tmAnswer of
+          Just x  -> ">>> " <> T.pack x
+          Nothing -> ">>>"
+       ]
+  where
+    printData :: (String, DSum TestType Identity) -> Text
+    printData (sym,dynval) = ">>>" <> T.pack sym <> ":" <> val <> ":" <> typ
+      where
+        (val, typ) = case dynval of
+          TTInt    :=> Identity x -> (T.pack (show x), "int")
+          TTString :=> Identity x -> (T.pack x, "string")

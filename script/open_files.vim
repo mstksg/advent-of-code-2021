@@ -25,6 +25,8 @@ function! OpenAoC(day)
     let l:yearstr = printf("%04d",s:year)
     let l:files = [ "prompt/" . l:daystr . "a.md",
                   \"prompt/" . l:daystr . "b.md",
+                  \"data/code-blocks/" . l:daystr . "a.txt",
+                  \"data/code-blocks/" . l:daystr . "b.txt",
                   \"test-data/" . l:yearstr . "/" . l:daystr . "a.txt",
                   \"test-data/" . l:yearstr . "/" . l:daystr . "b.txt",
                   \"data/" . l:daystr . ".txt",

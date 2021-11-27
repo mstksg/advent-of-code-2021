@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeFamilies #-}
+
 -- |
 -- Module      : AOC.Solver
 -- Copyright   : (c) Justin Le 2018
@@ -24,14 +26,22 @@ module AOC.Solver (
   , runSomeSolutionWith
   , dyno
   , dyno_
+  , TestType(..)
   ) where
 
 import           AOC.Util
 import           AOC.Util.DynoMap
 import           Control.DeepSeq
+import           Data.Constraint
+import           Data.Constraint.Compose
+import           Data.Constraint.Extras
+import           Data.Dependent.Sum
 import           Data.Dynamic
-import           Data.Map             (Map)
-import           GHC.Generics         (Generic)
+import           Data.Functor.Identity
+import           Data.GADT.Show
+import           Data.Kind
+import           Data.Map                (Map)
+import           GHC.Generics            (Generic)
 
 -- | Abstracting over the type of a challenge solver to help with cleaner
 -- solutions.
@@ -104,7 +114,7 @@ runSolution = runSolutionWith mempty
 
 -- | Run a ':~>' on some input, with a map of dynamic values for testing
 runSolutionWith
-    :: Map String Dynamic       -- ^ map of dynamic values for testing with 'lookupDyno'.
+    :: Map String (DSum TestType Identity)       -- ^ map of dynamic values for testing with 'lookupDyno'.
     -> a :~> b
     -> String
     -> Either SolutionError String
@@ -125,7 +135,7 @@ runSomeSolution = runSomeSolutionWith mempty
 -- | Run a 'SomeSolution' on some input, with a map of dynamic values for
 -- testing
 runSomeSolutionWith
-    :: Map String Dynamic       -- ^ map of dynamic values for testing with 'lookupDyno'.
+    :: Map String (DSum TestType Identity)       -- ^ map of dynamic values for testing with 'lookupDyno'.
     -> SomeSolution
     -> String
     -> Either SolutionError String
@@ -145,7 +155,7 @@ runSomeSolutionWith dm (MkSomeSol c) = runSolutionWith dm c
 -- This is useful for when some problems have parameters that are
 -- different with test inputs than for actual inputs.
 dyno
-    :: forall a. (Typeable a, ?dyno :: DynoMap)
+    :: forall a. (HasTestType a, ?dyno :: DynoMap)
     => String
     -> Maybe a
 dyno = (`lookupDyno` ?dyno)
@@ -161,7 +171,7 @@ dyno = (`lookupDyno` ?dyno)
 -- This is useful for when some problems have parameters that are
 -- different with test inputs than for actual inputs.
 dyno_
-    :: forall a. (Typeable a, ?dyno :: DynoMap)
+    :: forall a. (HasTestType a, ?dyno :: DynoMap)
     => String
     -> a            -- ^ default
     -> a

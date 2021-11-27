@@ -29,11 +29,14 @@ common common-options
                      , ansi-terminal
                      , base >=4.7 && <5
                      , bytestring
+                     , constraints
+                     , constraints-extras
                      , containers
                      , criterion
                      , data-default-class
                      , data-memocombinators
                      , deepseq
+                     , dependent-sum
                      , directory
                      , filepath
                      , finitary
@@ -58,6 +61,7 @@ common common-options
                      , psqueues
                      , semigroupoids
                      , split
+                     , tagsoup
                      , template-haskell
                      , text
                      , th-abstraction
