@@ -88,6 +88,7 @@ module AOC.Common (
   , toNatural
   , factorial
   , integerFactorial
+  , pascals
   , mapMaybeSet
   , symDiff
   , unfoldedIterate
@@ -138,37 +139,32 @@ import           Data.Function
 import           Data.Functor.Compose
 import           Data.Hashable
 import           Data.IntMap                        (IntMap)
-import           Data.List                          (uncons, sortOn)
 import           Data.List.NonEmpty                 (NonEmpty(..))
 import           Data.List.Split
 import           Data.Map                           (Map)
 import           Data.Map.NonEmpty                  (NEMap)
 import           Data.Maybe
-import           Data.Ord
 import           Data.Semigroup
 import           Data.Sequence                      (Seq(..))
 import           Data.Set                           (Set)
 import           Data.Set.NonEmpty                  (NESet)
 import           Data.Traversable
-import           Data.Tree                          (Tree(..))
 import           Data.Tuple
 import           Data.Void
 import           Data.Word
 import           Debug.Trace
-import           GHC.Generics                       (Generic, (:*:)(..))
+import           GHC.Generics                       (Generic)
 import           GHC.TypeNats
 import           Linear                             (V2(..), V3(..), V4(..), R1(..), R2(..), R3(..), R4(..))
 import           Numeric.Natural
 import qualified Control.Foldl                      as F
 import qualified Control.Monad.Combinators          as P
-import qualified Data.Conduino                      as C
-import qualified Data.Conduino.Combinators          as C
 import qualified Data.Finitary                      as F
 import qualified Data.Functor.Foldable              as R
-import qualified Data.Functor.Foldable.TH           as R
 import qualified Data.Graph.Inductive               as G
 import qualified Data.IntMap                        as IM
 import qualified Data.IntPSQ                        as IntPSQ
+import qualified Data.List                          as L
 import qualified Data.List.NonEmpty                 as NE
 import qualified Data.Map                           as M
 import qualified Data.Map.NonEmpty                  as NEM
@@ -185,6 +181,10 @@ import qualified Data.Vector.Generic.Sized.Internal as SVG
 import qualified Text.Megaparsec                    as P
 import qualified Text.Megaparsec.Char               as P
 import qualified Text.Megaparsec.Char.Lexer         as PL
+
+#if !MIN_VERSION_recursion_schemes(5,2,0)
+import           Data.Tree                          (Tree(..))
+#endif
 
 -- | trace but only after something has evaluated to WHNF
 trace' :: String -> a -> a
@@ -306,7 +306,7 @@ pickUnique mp = flip evalStateT S.empty $ do
       pick <- lift $ S.toList (poss `S.difference` seen)
       pick <$ modify (S.insert pick)
   where
-    opts = sortOn (S.size . snd) mp
+    opts = L.sortOn (S.size . snd) mp
 
 
 -- | Build a frequency map
@@ -793,7 +793,7 @@ instance (Ord a, Show a) => P.Stream (TokStream a) where
     tokensToChunk _ = Seq.fromList
     chunkToTokens _ = toList
     chunkLength   _ = Seq.length
-    take1_          = coerce . Data.List.uncons . getTokStream
+    take1_          = coerce . L.uncons . getTokStream
     takeN_        n (TokStream xs) = bimap Seq.fromList TokStream (splitAt n xs)
                                   <$ guard (not (null xs))
     takeWhile_ p = bimap Seq.fromList TokStream . span p . getTokStream
@@ -893,6 +893,9 @@ integerFactorial n = go 2 1
     go i !x
       | i > n     = x
       | otherwise = go (i + 1) (x * i)
+
+pascals :: [[Int]]
+pascals = repeat 1 : map (tail . L.scanl' (+) 0) pascals
 
 mapMaybeSet :: Ord b => (a -> Maybe b) -> Set a -> Set b
 mapMaybeSet f = S.fromList . mapMaybe f . S.toList

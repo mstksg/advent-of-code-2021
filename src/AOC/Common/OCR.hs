@@ -8,12 +8,14 @@ module AOC.Common.OCR (
   ) where
 
 import           AOC.Common
+import           AOC.Common.Point
 import           Control.Lens
 import           Control.Monad
 import           Data.Bifunctor
 import           Data.Foldable
 import           Data.List.NonEmpty (NonEmpty(..))
 import           Data.Map           (Map)
+import           Data.Maybe
 import           Data.Semigroup
 import           Data.Set           (Set)
 import           Data.Set.NonEmpty  (NESet)
@@ -53,7 +55,7 @@ parseLettersAll
     -> NonEmpty String
 parseLettersAll letters = snd $ NEM.findMin attempts
   where
-    NEM.IsNonEmpty attempts = M.fromListWith (<>)
+    attempts = fromJust . NEM.nonEmptyMap $ M.fromListWith (<>)
         [ (score :: Int, res :| [])
         | refl <- [id, over _x negate]
         , rots <- [id, perp, negate, negate . perp]
