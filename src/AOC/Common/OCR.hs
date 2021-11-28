@@ -19,7 +19,6 @@ import           Data.Maybe
 import           Data.Semigroup
 import           Data.Set           (Set)
 import           Data.Set.NonEmpty  (NESet)
-import           Linear
 import           Text.Heredoc       (here)
 import qualified Control.Foldl      as F
 import qualified Data.List.NonEmpty as NE
