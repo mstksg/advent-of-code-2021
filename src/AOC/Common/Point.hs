@@ -10,11 +10,15 @@ module AOC.Common.Point (
   , fullNeighbs
   , fullNeighbsSet
   , mannDist
+  , mannNorm
   , mulPoint
   , lineTo
+  -- * Linear operations
+  , module L
   -- * Directions
   , Dir(..)
   , parseDir
+  , parseDir'
   , dirPoint
   , dirPoint'
   , rotPoint
@@ -80,6 +84,12 @@ import qualified Data.Map.NonEmpty       as NEM
 import qualified Data.MemoCombinators    as Memo
 import qualified Data.Set                as S
 import qualified Data.Set.NonEmpty       as NES
+import qualified Linear.Algebra          as L
+import qualified Linear.V0               as L
+import qualified Linear.V1               as L
+import qualified Linear.V2               as L
+import qualified Linear.V3               as L
+import qualified Linear.Vector           as L
 
 -- | 2D Coordinate
 type Point = V2 Int
@@ -168,6 +178,9 @@ memoPoint = Memo.wrap (uncurry V2) (\(V2 x y) -> (x, y)) $
 mannDist :: (Foldable f, Num a, Num (f a)) => f a -> f a -> a
 mannDist x y = sum . abs $ x - y
 
+mannNorm :: (Foldable f, Num a, Num (f a)) => f a -> a
+mannNorm x = mannDist x x
+
 -- | Treat as complex number multiplication. useful for rotations
 mulPoint :: Num a => V2 a -> V2 a -> V2 a
 mulPoint (V2 x y) (V2 u v) = V2 (x*u - y*v) (x*v + y*u)
@@ -220,6 +233,11 @@ parseDir = flip M.lookup dirMap . toUpper
         ('N', North) , ('E', East) , ('S', South) , ('W', West)
       , ('U', North) , ('R', East) , ('D', South) , ('L', West)
       ]
+
+parseDir' :: Char -> Dir
+parseDir' c = case parseDir c of
+    Nothing -> error $ "bad parse dir: " <> [c]
+    Just x  -> x
 
 -- | Multiply headings, taking North as straight, East as clockwise turn,
 -- West as counter-clockwise turn, and South as reverse.
