@@ -28,16 +28,33 @@ module AOC.Challenge.Day09 (
 
 import           AOC.Prelude
 
+import qualified Data.Graph.Inductive           as G
+import qualified Data.IntMap                    as IM
+import qualified Data.IntSet                    as IS
+import qualified Data.List.NonEmpty             as NE
+import qualified Data.List.PointedList          as PL
+import qualified Data.List.PointedList.Circular as PLC
+import qualified Data.Map                       as M
+import qualified Data.OrdPSQ                    as PSQ
+import qualified Data.Sequence                  as Seq
+import qualified Data.Set                       as S
+import qualified Data.Text                      as T
+import qualified Data.Vector                    as V
+import qualified Linear                         as L
+import qualified Text.Megaparsec                as P
+import qualified Text.Megaparsec.Char           as P
+import qualified Text.Megaparsec.Char.Lexer     as PP
+
 day09a :: _ :~> _
 day09a = MkSol
-    { sParse = Just
+    { sParse = Just . lines
     , sShow  = show
     , sSolve = Just
     }
 
 day09b :: _ :~> _
 day09b = MkSol
-    { sParse = Just
+    { sParse = sParse day09a
     , sShow  = show
     , sSolve = Just
     }
