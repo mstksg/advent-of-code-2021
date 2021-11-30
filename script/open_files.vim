@@ -26,6 +26,8 @@ function! OpenAoC(day)
                   \"data/" . l:daystr . ".txt",
                   \"prompt/" . l:daystr . "a.md",
                   \"prompt/" . l:daystr . "b.md",
+                  \"data/code-blocks/" . l:daystr . "a.txt",
+                  \"data/code-blocks/" . l:daystr . "b.txt",
                   \"test-data/" . l:yearstr . "/" . l:daystr . "a.txt",
                   \"test-data/" . l:yearstr . "/" . l:daystr . "b.txt",
                   \"reflections/day" . l:daystr . ".md",
