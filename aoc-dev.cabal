@@ -64,6 +64,7 @@ common common-options
                      , pandoc
                      , parallel
                      , parser-combinators
+                     , pointedlist
                      , profunctors
                      , psqueues
                      , recursion-schemes
