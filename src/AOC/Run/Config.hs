@@ -1,6 +1,6 @@
 -- |
 -- Module      : AOC.Run.Config
--- Copyright   : (c) Justin Le 2018
+-- Copyright   : (c) Justin Le 2021
 -- License     : BSD3
 --
 -- Maintainer  : justin@jle.im

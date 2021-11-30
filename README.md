@@ -92,7 +92,7 @@ The *[AOC.Run.Interactive][interactive]* module has code (powered by
 GHCI, so you don't have to re-compile. If you edit your solution programs, they
 are automatically updated when you hit `:r` in ghci.
 
-[interactive]: https://mstksg.github.io/advent-of-code-2018/AOC-Run-Interactive.html
+[interactive]: https://mstksg.github.io/advent-of-code-dev/AOC-Run-Interactive.html
 
 ```haskell
 ghci> execSolution_   $ solSpec 'day02a  -- get answer for challenge based on solution
@@ -117,7 +117,7 @@ based on whatever year you are attempting.
 
 ```
 $ aoc-dev --help
-aoc-dev - Advent of Code 2018 challenge runner
+aoc-dev - Advent of Code 2020 challenge runner
 
 Usage: aoc-dev [-c|--config PATH] COMMAND
    Run, test, bench, challenges from Advent of Code, and view prompts.
