@@ -48,6 +48,8 @@ module AOC.Common (
   , perturbationsBy
   , select
   , slidingWindows
+  , withSlidingPairs
+  , slidingPairs
   , sortedSlidingWindows
   , sortedSlidingWindowsInt
   , clearOut
@@ -434,6 +436,12 @@ perturbationsBy p f = experiment f <=< holesOf p
 clearOut :: (Char -> Bool) -> String -> String
 clearOut p = map $ \c -> if p c then ' '
                                 else c
+
+withSlidingPairs :: (a -> a -> b) -> [a] -> [b]
+withSlidingPairs f xs = zipWith f (drop 1 xs) xs
+
+slidingPairs :: [a] -> [(a,a)]
+slidingPairs = withSlidingPairs (,)
 
 -- | sliding windows of a given length
 slidingWindows :: Int -> [a] -> [Seq a]
