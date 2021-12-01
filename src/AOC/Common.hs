@@ -50,6 +50,8 @@ module AOC.Common (
   , slidingWindows
   , withSlidingPairs
   , slidingPairs
+  , withLaggedPairs
+  , laggedPairs
   , sortedSlidingWindows
   , sortedSlidingWindowsInt
   , clearOut
@@ -437,11 +439,17 @@ clearOut :: (Char -> Bool) -> String -> String
 clearOut p = map $ \c -> if p c then ' '
                                 else c
 
+withLaggedPairs :: Int -> (a -> a -> b) -> [a] -> [b]
+withLaggedPairs n f xs = zipWith f xs (drop n xs)
+
+laggedPairs :: Int -> [a] -> [(a,a)]
+laggedPairs n = withLaggedPairs n (,)
+
 withSlidingPairs :: (a -> a -> b) -> [a] -> [b]
-withSlidingPairs f xs = zipWith f (drop 1 xs) xs
+withSlidingPairs = withLaggedPairs 1
 
 slidingPairs :: [a] -> [(a,a)]
-slidingPairs = withSlidingPairs (,)
+slidingPairs = laggedPairs 1
 
 -- | sliding windows of a given length
 slidingWindows :: Int -> [a] -> [Seq a]

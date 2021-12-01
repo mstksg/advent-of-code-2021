@@ -14,26 +14,26 @@ module AOC.Challenge.Day01 (
   ) where
 
 import           AOC.Solver ((:~>)(..))
-import           AOC.Common (slidingWindows, slidingPairs, countTrue)
+import           AOC.Common (laggedPairs, countTrue)
 import           Text.Read (readMaybe)
 
 parseInput :: String -> Maybe [Int]
 parseInput = traverse readMaybe . lines
 
-countIncreases :: [Int] -> Int
-countIncreases = countTrue (uncurry (<)) . slidingPairs
+countIncreases :: Int -> [Int] -> Int
+countIncreases n = countTrue (uncurry (<)) . laggedPairs n
 
 day01a :: [Int] :~> Int
 day01a = MkSol
     { sParse = parseInput
     , sShow  = show
-    , sSolve = Just . countIncreases
+    , sSolve = Just . countIncreases 1
     }
 
 day01b :: [Int] :~> Int
 day01b = MkSol
     { sParse = parseInput
     , sShow  = show
-    , sSolve = Just . countIncreases . map sum . slidingWindows 3
+    , sSolve = Just . countIncreases 3
     }
 
