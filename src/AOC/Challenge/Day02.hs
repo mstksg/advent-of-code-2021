@@ -12,7 +12,6 @@ module AOC.Challenge.Day02 (
   , day02b
   ) where
 
-import           AOC.Common                    (traverseLines)
 import           AOC.Common.Point              (Point)
 import           AOC.Solver                    ((:~>)(..))
 import           Data.Semigroup                (Sum(..))
@@ -43,7 +42,7 @@ day02
     -> (r -> Point)     -- ^ re-extract position
     -> [r] :~> Int
 day02 f g ext = MkSol
-    { sParse = traverseLines parseAsDir
+    { sParse = traverse parseAsDir . lines
     , sShow  = show
     , sSolve = Just . product @V2 . ext . mconcat
     }
