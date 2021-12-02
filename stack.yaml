@@ -47,6 +47,7 @@ extra-deps:
 # - constraints-extras-0.3.2.0
 # - conduino-0.2.2.0
 # - list-transformer-1.0.7
+- monoid-extras-0.6.1
 
 allow-newer: true
 

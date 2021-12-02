@@ -18,6 +18,13 @@ packages:
       sha256: 38e03206b355db7a6a2f3ad73039b18b15245141b6974080b7d9a99e82ddf76a
   original:
     hackage: finitary-2.1.1.0
+- completed:
+    hackage: monoid-extras-0.6.1@sha256:15312b3ed40481fc879fc7021857421794403763325d5c05b8536198012170b1,2197
+    pantry-tree:
+      size: 1187
+      sha256: 0baa6b12d8bbc9872d91f5dca7738759e3bd79bf719d1e94b96470fc1dda23b6
+  original:
+    hackage: monoid-extras-0.6.1
 snapshots:
 - completed:
     size: 586296

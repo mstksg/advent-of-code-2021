@@ -12,13 +12,13 @@ module AOC.Challenge.Day02 (
   , day02b
   ) where
 
-import           AOC.Common.Point              (Point)
-import           AOC.Solver                    ((:~>)(..))
-import           Data.Semigroup                (Sum(..))
-import           Linear.V2                     (V2(..))
-import           Text.Read                     (readMaybe)
-import qualified Data.Monoid.Action            as Mo
-import qualified Data.Monoid.SemiDirectProduct as Mo
+import           AOC.Common.Point                     (Point)
+import           AOC.Solver                           ((:~>)(..))
+import           Data.Semigroup                       (Sum(..))
+import           Linear.V2                            (V2(..))
+import           Text.Read                            (readMaybe)
+import qualified Data.Monoid.Action                   as Mo
+import qualified Data.Monoid.SemiDirectProduct.Strict as Mo
 
 day02a :: [Sum Point] :~> Int
 day02a = day02
