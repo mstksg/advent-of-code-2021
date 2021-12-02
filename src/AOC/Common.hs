@@ -115,6 +115,9 @@ module AOC.Common (
   , pTok
   , pSpace
   , parseLines
+  -- * Normal simple line-based
+  , mapMaybeLines
+  , traverseLines
   -- * Graph
   , Graph
   , toFGL
@@ -892,6 +895,12 @@ type TokParser s = P.Parsec Void (TokStream s)
 -- | Skip every result until this token matches
 nextMatch :: P.MonadParsec e s m => m a -> m a
 nextMatch = P.try . fmap snd . P.manyTill_ (P.try P.anySingle)
+
+traverseLines :: (String -> Maybe a) -> String -> Maybe [a]
+traverseLines f = traverse f . lines
+
+mapMaybeLines :: (String -> Maybe a) -> String -> [a]
+mapMaybeLines f = mapMaybe f . lines
 
 toNatural :: Integral a => a -> Maybe Natural
 toNatural x = fromIntegral x <$ guard (x >= 0)

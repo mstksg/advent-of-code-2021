@@ -108,7 +108,13 @@ waitForPrompt cs = eitherIO $ do
 submitSolution :: ChallengeSpec -> IO (Text, SubmitRes)
 submitSolution cs = eitherIO $ do
     cfg <- liftIO $ configFile defConfPath
-    mainSubmit cfg . defaultMSO $ cs
+    (raw, res) <- mainSubmit cfg . defaultMSO $ cs
+    -- automatically get part 2 if correct
+    -- but we should probably make this global (command line level too?)
+    case (res, _csPart cs) of
+      (SubCorrect _, Part1) -> liftIO . viewPrompt_ $ cs { _csPart = Part2 }
+      _ -> pure ()
+    pure (raw, res)
 
 -- | Result-suppressing version of 'execSolution'.
 execSolution_ :: ChallengeSpec -> IO ()

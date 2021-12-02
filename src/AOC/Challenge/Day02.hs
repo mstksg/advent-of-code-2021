@@ -22,8 +22,8 @@
 --     will recommend what should go in place of the underscores.
 
 module AOC.Challenge.Day02 (
-    -- day02a
-  -- , day02b
+    day02a
+  , day02b
   ) where
 
 import           AOC.Prelude
@@ -45,16 +45,34 @@ import qualified Text.Megaparsec                as P
 import qualified Text.Megaparsec.Char           as P
 import qualified Text.Megaparsec.Char.Lexer     as PP
 
-day02a :: _ :~> _
+day02a :: [(Point)] :~> _
 day02a = MkSol
-    { sParse = Just . lines
+    { sParse = Just . mapMaybeLines (\x -> case words x of
+        "forward":n:_ -> Just $ (V2 (read n) 0)
+        "down":n:_ -> Just (V2 0 (read n))
+        "up":n:_ -> Just (V2 0 (negate (read n)))
+    )
     , sShow  = show
-    , sSolve = Just
+    , sSolve = Just . product . sum
     }
 
-day02b :: _ :~> _
+-- -   `down X` *increases* your aim by `X` units.
+-- -   `up X` *decreases* your aim by `X` units.
+-- -   `forward X` does two things:
+--     -   It increases your horizontal position by `X` units.
+--     -   It increases your depth by your aim *multiplied by* `X`.
+
+day02b :: [Either Int Int] :~> _
 day02b = MkSol
-    { sParse = sParse day02a
+    { sParse = Just . mapMaybeLines (\x -> case words x of
+        "forward":n:_ -> Just $ Left (read n)
+        "down":n:_ -> Just $ Right (read n)
+        "up":n:_ -> Just $ Right . negate $ read n
+      )
     , sShow  = show
-    , sSolve = Just
+    , sSolve = Just . product . fst . foldl' go (0, 0)
     }
+  where
+    go (pos, aim) = \case
+      Left i -> (pos + V2 i (i*aim), aim)
+      Right i -> (pos, aim + i)
