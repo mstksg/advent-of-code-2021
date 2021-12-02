@@ -12,53 +12,56 @@ module AOC.Challenge.Day02 (
   , day02b
   ) where
 
-import           AOC.Common (traverseLines)
-import           AOC.Solver ((:~>)(..))
-import           Linear.V2
-import           Text.Read  (readMaybe)
+import           AOC.Common                    (traverseLines)
+import           AOC.Common.Point              (Point)
+import           AOC.Solver                    ((:~>)(..))
+import           Data.Semigroup                (Sum(..))
+import           Linear.V2                     (V2(..))
+import           Text.Read                     (readMaybe)
+import qualified Data.Monoid.Action            as Mo
+import qualified Data.Monoid.SemiDirectProduct as Mo
 
-day02a :: [(V2 Int)] :~> Int
-day02a = MkSol
-    { sParse = traverseLines $ parseAsDir
-            (\x -> V2 x 0)
-            (\y -> V2 0 y)
+day02a :: [Sum Point] :~> Int
+day02a = day02
+    (\x -> Sum $ V2 x 0)
+    (\y -> Sum $ V2 0 y)
+    getSum
+
+day02b :: [Mo.Semi (Sum Point) Aim] :~> Int
+day02b = day02
+    (\x -> Mo.inject (Sum (V2 x 0)))
+    (\a -> Mo.embed  (Aim a))
+    (getSum . Mo.untag)
+
+
+
+-- | The difference between Part 1 and Part 2 is just a different monoid
+day02
+    :: Monoid r
+    => (Int -> r)       -- ^ forward
+    -> (Int -> r)       -- ^ up/down
+    -> (r -> Point)     -- ^ re-extract position
+    -> [r] :~> Int
+day02 f g ext = MkSol
+    { sParse = traverseLines parseAsDir
     , sShow  = show
-    , sSolve = Just . product @V2 . sum
-    }
-
-data SubState = SubState { pX :: !Int, pY :: !Int, aY :: !Int }
-  deriving stock Show
-
--- | semi-direct product
-instance Semigroup SubState where
-    SubState x y a <> SubState x' y' a' =
-      SubState (x + x') (y + y' + x' * a) (a + a')
-
-instance Monoid SubState where
-    mempty = SubState 0 0 0
-
-day02b :: [SubState] :~> Int
-day02b = MkSol
-    { sParse = traverseLines $ parseAsDir
-        (\x -> SubState x 0 0)
-        (\a -> SubState 0 0 a)
-    , sShow  = show
-    , sSolve = Just . summarize . mconcat
+    , sSolve = Just . product @V2 . ext . mconcat
     }
   where
-    summarize (SubState x y _) = x * y
+    parseAsDir ln = do
+      dir:n:_ <- Just $ words ln
+      amnt    <- readMaybe n
+      case dir of
+        "forward" -> Just $ f amnt
+        "down"    -> Just $ g amnt
+        "up"      -> Just $ g (-amnt)
+        _         -> Nothing
 
-parseAsDir
-    :: (Int -> r)   -- ^ forward
-    -> (Int -> r)   -- ^ up or down
-    -> String
-    -> Maybe r
-parseAsDir f g ln = do
-    dir:n:_ <- Just $ words ln
-    amnt    <- readMaybe n
-    case dir of
-      "forward" -> Just $ f amnt
-      "down"    -> Just $ g amnt
-      "up"      -> Just $ g (-amnt)
-      _         -> Nothing
+
+newtype Aim = Aim Int
+deriving via Sum Int instance Semigroup Aim
+deriving via Sum Int instance Monoid Aim
+
+instance Mo.Action Aim (Sum Point) where
+    act (Aim a) (Sum (V2 x y)) = Sum (V2 x (y + a * x))
 
