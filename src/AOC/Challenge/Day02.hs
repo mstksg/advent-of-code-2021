@@ -17,7 +17,7 @@ import           AOC.Solver ((:~>)(..))
 import           Linear.V2
 import           Text.Read  (readMaybe)
 
-day02a :: [(V2 Int)] :~> _
+day02a :: [(V2 Int)] :~> Int
 day02a = MkSol
     { sParse = traverseLines $ parseAsDir
             (\x -> V2 x 0)
