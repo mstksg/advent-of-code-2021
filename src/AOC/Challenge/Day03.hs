@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -Wno-unused-imports   #-}
-
 -- |
 -- Module      : AOC.Challenge.Day03
 -- License     : BSD3
@@ -8,47 +6,29 @@
 -- Portability : non-portable
 --
 -- Day 3.  See "AOC.Solver" for the types used in this module!
---
--- After completing the challenge, it is recommended to:
---
--- *   Replace "AOC.Prelude" imports to specific modules (with explicit
---     imports) for readability.
--- *   Remove the @-Wno-unused-imports@ and @-Wno-unused-top-binds@
---     pragmas.
--- *   Replace the partial type signatures underscores in the solution
---     types @_ :~> _@ with the actual types of inputs and outputs of the
---     solution.  You can delete the type signatures completely and GHC
---     will recommend what should go in place of the underscores.
 
 module AOC.Challenge.Day03 (
     day03a
   , day03b
   ) where
 
-import           AOC.Prelude
-
-import           Data.Functor.Foldable
-import           Data.Functor.Foldable.TH
-import           Data.List                      (transpose, sort, group, sortOn)
-import           Numeric.Lens                   (base)
-import qualified Data.Fix                       as DF
-import qualified Data.Graph.Inductive           as G
-import qualified Data.IntMap                    as IM
-import qualified Data.IntSet                    as IS
-import qualified Data.List                      as Li
-import qualified Data.List.NonEmpty             as NE
-import qualified Data.List.PointedList          as PL
-import qualified Data.List.PointedList.Circular as PLC
-import qualified Data.Map                       as M
-import qualified Data.OrdPSQ                    as PSQ
-import qualified Data.Sequence                  as Seq
-import qualified Data.Set                       as S
-import qualified Data.Text                      as T
-import qualified Data.Vector                    as V
-import qualified Linear                         as L
-import qualified Text.Megaparsec                as P
-import qualified Text.Megaparsec.Char           as P
-import qualified Text.Megaparsec.Char.Lexer     as PP
+import           AOC.Common               (traverseLines)
+import           AOC.Solver               ((:~>)(..))
+import           Control.DeepSeq          (NFData)
+import           Control.Lens             (Prism', (^?!), review, preview, prism')
+import           Control.Monad            ((<=<))
+import           Data.Coerce              (coerce)
+import           Data.Functor.Foldable    (hylo)
+import           Data.Functor.Foldable.TH (makeBaseFunctor)
+import           Data.List.NonEmpty       (NonEmpty(..))
+import           Data.Semigroup           (Sum(..))
+import           Data.These               (mergeThese)
+import           GHC.Generics             (Generic)
+import           Linear.V2                (V2(..))
+import           Numeric.Lens             (base)
+import qualified Data.DList               as DL
+import qualified Data.List.NonEmpty       as NE
+import qualified Data.Zip                 as Z
 
 data Bit = Zero | One
   deriving stock (Eq, Ord, Show, Generic)
@@ -68,16 +48,19 @@ data BinTrie =
   deriving stock Show
 makeBaseFunctor ''BinTrie
 
-day03a :: [String] :~> Int
+day03a :: NonEmpty [Bit] :~> _
 day03a = MkSol
-    { sParse = Just . lines
-    , sShow  = show
-    , sSolve = fmap product
-             . traverse (preview (base 2))
-             . transpose
-             . map (map fst . sortOn snd . zip "01" . map length . group . sort)
-             . transpose
+    { sParse = NE.nonEmpty <=< traverseLines (traverse (preview _Bit))
+    , sShow = \xs -> show @Int
+        let ys = map flipBit xs
+            toBin str = map (review _Bit) str ^?! base 2
+        in  toBin xs * toBin ys
+    , sSolve = Just . map pickMost . snd . hylo part1Alg buildTrieCoalg
     }
+  where
+    pickMost (V2 x y)
+      | x > y     = Zero
+      | otherwise = One
 
 day03b :: NonEmpty [Bit] :~> ([Bit], [Bit])
 day03b = MkSol
@@ -85,24 +68,40 @@ day03b = MkSol
     , sShow  = \(o2, co2) -> show @Int
         let toBin str = map (review _Bit) str ^?! base 2
         in  toBin o2 * toBin co2
-    , sSolve = Just . snd . hylo btAlg btCoalg
+    , sSolve = Just . snd . hylo part2Alg buildTrieCoalg
     }
 
-btCoalg :: NonEmpty [Bit] -> BinTrieF (NonEmpty [Bit])
-btCoalg (theOne :| theRest)
+buildTrieCoalg :: NonEmpty [Bit] -> BinTrieF (NonEmpty [Bit])
+buildTrieCoalg (theOne :| theRest)
   | null theRest = BTLeafF theOne
   | otherwise    =
       let V2 zeroes ones = peelOff (theOne : theRest)
       in  BTNodeF (NE.nonEmpty zeroes) (NE.nonEmpty ones)
 
+part1Alg
+    :: BinTrieF (Int, [V2 Int])
+    -> (Int, [V2 Int])
+part1Alg = \case
+    BTLeafF xs -> (1, map singleCount xs)
+    BTNodeF zeroes ones ->
+      let (Sum numZeroes, zeroAmts) = foldMap coerce zeroes
+          (Sum numOnes  , oneAmts ) = foldMap coerce ones
+          newNum  = numZeroes + numOnes
+          newAmts = V2 numZeroes numOnes
+                  : Z.alignWith (mergeThese (+)) zeroAmts oneAmts
+      in  (newNum, newAmts)
+  where
+    singleCount Zero = V2 1 0
+    singleCount One  = V2 0 1
+
 -- | Collect both the oxygen (fst) and co2 (snd) answers at the same time
 --
 -- The first item int he tuple is the number of items under the given
 -- branch
-btAlg
+part2Alg
     :: BinTrieF (Int, ([Bit], [Bit]))
     -> (Int, ([Bit], [Bit]))
-btAlg = \case
+part2Alg = \case
     BTLeafF xs -> (1, (xs, xs))
     BTNodeF zeroes ones ->
       let numZeroes = maybe 0 fst zeroes
@@ -120,7 +119,9 @@ btAlg = \case
 peelOff
     :: [[Bit]]
     -> V2 [[Bit]]         -- ^ x is zeros, y is ones
-peelOff = foldMap \case
-    []      -> mempty
-    Zero:xs -> V2 [xs] []
-    One :ys -> V2 [] [ys]
+peelOff = fmap DL.toList . foldMap go
+  where
+    go = \case
+      []      -> mempty
+      Zero:xs -> V2 (DL.singleton xs) mempty
+      One :ys -> V2 mempty (DL.singleton ys)

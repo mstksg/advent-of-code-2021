@@ -30,6 +30,7 @@ import           Control.Monad.Except      as P
 import           Control.Monad.State       as P
 import           Data.Bifunctor            as P
 import           Data.Char                 as P
+import           Data.Coerce               as P
 import           Data.Containers.ListUtils as P
 import           Data.Either               as P
 import           Data.Finite               as P (Finite, packFinite, getFinite, modulo, finites)

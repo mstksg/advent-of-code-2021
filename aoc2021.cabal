@@ -42,6 +42,7 @@ common common-options
                      , deepseq
                      , dependent-sum
                      , directory
+                     , dlist
                      , fgl
                      , filepath
                      , fin
@@ -70,6 +71,7 @@ common common-options
                      , profunctors
                      , psqueues
                      , recursion-schemes
+                     , semialign
                      , semigroupoids
                      , split
                      , strict-tuple
@@ -77,6 +79,7 @@ common common-options
                      , template-haskell
                      , text
                      , th-abstraction
+                     , these
                      , time
                      , transformers
                      , vector
