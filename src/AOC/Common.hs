@@ -119,6 +119,7 @@ module AOC.Common (
   , mapMaybeLines
   , mapMaybeLinesJust
   , traverseLines
+  , parseBin
   -- * Graph
   , Graph
   , toFGL
@@ -164,6 +165,7 @@ import           Debug.Trace
 import           GHC.Generics                       (Generic)
 import           GHC.TypeNats
 import           Linear                             (V2(..), V3(..), V4(..), R1(..), R2(..), R3(..), R4(..))
+import           Numeric
 import           Numeric.Natural
 import qualified Control.Foldl                      as F
 import qualified Control.Monad.Combinators          as P
@@ -899,6 +901,10 @@ nextMatch = P.try . fmap snd . P.manyTill_ (P.try P.anySingle)
 
 traverseLines :: (String -> Maybe a) -> String -> Maybe [a]
 traverseLines f = traverse f . lines
+
+-- | parse a binary string
+parseBin :: String -> Maybe Int
+parseBin = fmap fst . listToMaybe . readInt 2 (`elem` "01") digitToInt
 
 mapMaybeLines :: (String -> Maybe a) -> String -> [a]
 mapMaybeLines f = mapMaybe f . lines
