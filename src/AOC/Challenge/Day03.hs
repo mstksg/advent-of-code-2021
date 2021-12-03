@@ -29,7 +29,9 @@ module AOC.Challenge.Day03 (
 import           AOC.Prelude
 
 import           Data.Functor.Foldable
+import           Data.Functor.Foldable.TH
 import           Data.List
+import qualified Data.Fix                       as DF
 import qualified Data.Graph.Inductive           as G
 import qualified Data.IntMap                    as IM
 import qualified Data.IntSet                    as IS
@@ -48,7 +50,26 @@ import qualified Text.Megaparsec                as P
 import qualified Text.Megaparsec.Char           as P
 import qualified Text.Megaparsec.Char.Lexer     as PP
 
-day03a :: _ :~> _
+data Bit = Zero | One
+  deriving stock (Eq, Ord, Show, Generic)
+  deriving anyclass NFData
+
+_Bit :: Prism' Char Bit
+_Bit = prism' (\case Zero -> '0'; One -> '1')
+              (`lookup` [('0', Zero), ('1', One)])
+
+flipBit :: Bit -> Bit
+flipBit Zero = One
+flipBit One  = Zero
+
+data BinTrie =
+    BTLeaf [Bit]
+  | BTNode (Maybe BinTrie) (Maybe BinTrie)
+  deriving stock Show
+
+makeBaseFunctor ''BinTrie
+
+day03a :: [String] :~> Int
 day03a = MkSol
     { sParse = Just . lines
     , sShow  = show
@@ -59,28 +80,78 @@ day03a = MkSol
              . transpose
     }
 
-day03b :: [[Bit]] :~> _
+day03b :: NonEmpty [Bit] :~> V2 [Bit]
 day03b = MkSol
-    { sParse = traverseLines $ traverse (preview _Bit)
+    { sParse = NE.nonEmpty <=< traverseLines (traverse (preview _Bit))
     , sShow  = show . maybe 0 product . traverse (parseBin . map (review _Bit))
     , sSolve = \xs -> Just
-        let oxy = searchFor id xs
-            car = searchFor flipBit xs
+        let oxy = snd $ hylo (btAlg id)      btCoalg xs
+            car = snd $ hylo (btAlg flipBit) btCoalg xs
         in  V2 oxy car
     }
 
-data Bit = Zero | One
-  deriving stock (Eq, Ord, Show, Generic)
+maybeNE :: Maybe (NonEmpty a) -> [a]
+maybeNE Nothing = []
+maybeNE (Just (x :| xs)) = x : xs
 
-_Bit :: Prism' Char Bit
-_Bit = prism' (\case Zero -> '0'; One -> '1')
-              (`lookup` [('0', Zero), ('1', One)])
+tearBinTrie :: (Bit -> Bit) -> BinTrie -> [Bit]
+tearBinTrie picker = snd . tearBinTrie_ picker
 
-flipBit :: Bit -> Bit
-flipBit Zero = One
-flipBit One  = Zero
+tearBinTrie_ :: (Bit -> Bit) -> BinTrie -> (Int, [Bit])
+tearBinTrie_ picker = cata $ \case
+    BTLeafF xs -> (1, xs)
+    BTNodeF zeroes ones ->
+      let numZeroes = maybe 1 fst zeroes
+          numOnes   = maybe 1 fst ones
+          bitToKeep
+            | numZeroes > numOnes = picker Zero
+            | otherwise           = picker One
+          res = case bitToKeep of
+            Zero -> Zero : foldMap snd zeroes
+            One  -> One  : foldMap snd ones
+      in  (numZeroes + numOnes, res)
 
-instance NFData Bit
+buildBinTrie :: [[Bit]] -> BinTrie
+buildBinTrie = maybe (BTNode Nothing Nothing) buildBinTrie_ . NE.nonEmpty
+
+buildBinTrie_ :: NonEmpty [Bit] -> BinTrie
+buildBinTrie_ = ana $ \xs ->
+    case xs of
+      theOne:|[] -> BTLeafF theOne
+      _          ->
+        let V2 zeroes ones = peelOff (toList xs)
+        in  BTNodeF (NE.nonEmpty zeroes) (NE.nonEmpty ones)
+
+btCoalg :: NonEmpty [Bit] -> BinTrieF (NonEmpty [Bit])
+btCoalg (theOne :| theRest)
+  | null theRest = BTLeafF theOne
+  | otherwise    =
+      let V2 zeroes ones = peelOff (theOne : theRest)
+      in  BTNodeF (NE.nonEmpty zeroes) (NE.nonEmpty ones)
+
+btAlg
+    :: (Bit -> Bit)
+    -> BinTrieF (Int, [Bit])
+    -> (Int, [Bit])
+btAlg picker = \case
+    BTLeafF xs -> (1, xs)
+    BTNodeF zeroes ones ->
+      let numZeroes = maybe 1 fst zeroes
+          numOnes   = maybe 1 fst ones
+          bitToKeep
+            | numZeroes > numOnes = picker Zero
+            | otherwise           = picker One
+          res = case bitToKeep of
+            Zero -> Zero : foldMap snd zeroes
+            One  -> One  : foldMap snd ones
+      in  (numZeroes + numOnes, res)
+
+peelOff'
+    :: [NonEmpty Bit]
+    -> V2 [[Bit]]         -- ^ x is zeros, y is ones
+peelOff' = foldMap \case
+    Zero:|xs -> V2 [xs] []
+    One :|ys -> V2 [] [ys]
 
 searchFor
     :: (Bit -> Bit)     -- ^ modify the picked bit (oxygen = id, co2 = flipBit)

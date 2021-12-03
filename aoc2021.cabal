@@ -37,6 +37,7 @@ common common-options
                      , containers
                      , criterion
                      , data-default-class
+                     , data-fix
                      , data-memocombinators
                      , deepseq
                      , dependent-sum
@@ -106,6 +107,7 @@ common common-options
       BangPatterns
       BlockArguments
       DataKinds
+      DeriveAnyClass
       DeriveFoldable
       DeriveFunctor
       DeriveGeneric
@@ -137,6 +139,7 @@ common common-options
       TemplateHaskell
       TupleSections
       TypeApplications
+      TypeFamilies
       TypeInType
       TypeOperators
       UndecidableInstances
