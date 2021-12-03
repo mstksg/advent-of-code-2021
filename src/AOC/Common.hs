@@ -117,6 +117,7 @@ module AOC.Common (
   , parseLines
   -- * Normal simple line-based
   , mapMaybeLines
+  , mapMaybeLinesJust
   , traverseLines
   -- * Graph
   , Graph
@@ -901,6 +902,9 @@ traverseLines f = traverse f . lines
 
 mapMaybeLines :: (String -> Maybe a) -> String -> [a]
 mapMaybeLines f = mapMaybe f . lines
+
+mapMaybeLinesJust :: (String -> Maybe a) -> String -> Maybe [a]
+mapMaybeLinesJust f = Just . mapMaybeLines f
 
 toNatural :: Integral a => a -> Maybe Natural
 toNatural x = fromIntegral x <$ guard (x >= 0)
