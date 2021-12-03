@@ -1,5 +1,4 @@
 {-# OPTIONS_GHC -Wno-unused-imports   #-}
-{-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
 -- |
 -- Module      : AOC.Challenge.Day03
@@ -30,7 +29,8 @@ import           AOC.Prelude
 
 import           Data.Functor.Foldable
 import           Data.Functor.Foldable.TH
-import           Data.List
+import           Data.List                      (transpose, sort, group, sortOn)
+import           Numeric.Lens                   (base)
 import qualified Data.Fix                       as DF
 import qualified Data.Graph.Inductive           as G
 import qualified Data.IntMap                    as IM
@@ -66,7 +66,6 @@ data BinTrie =
     BTLeaf [Bit]
   | BTNode (Maybe BinTrie) (Maybe BinTrie)
   deriving stock Show
-
 makeBaseFunctor ''BinTrie
 
 day03a :: [String] :~> Int
@@ -74,53 +73,20 @@ day03a = MkSol
     { sParse = Just . lines
     , sShow  = show
     , sSolve = fmap product
-             . traverse parseBin
+             . traverse (preview (base 2))
              . transpose
              . map (map fst . sortOn snd . zip "01" . map length . group . sort)
              . transpose
     }
 
-day03b :: NonEmpty [Bit] :~> V2 [Bit]
+day03b :: NonEmpty [Bit] :~> ([Bit], [Bit])
 day03b = MkSol
     { sParse = NE.nonEmpty <=< traverseLines (traverse (preview _Bit))
-    , sShow  = show . maybe 0 product . traverse (parseBin . map (review _Bit))
-    , sSolve = \xs -> Just
-        let oxy = snd $ hylo (btAlg id)      btCoalg xs
-            car = snd $ hylo (btAlg flipBit) btCoalg xs
-        in  V2 oxy car
+    , sShow  = \(o2, co2) -> show @Int
+        let toBin str = map (review _Bit) str ^?! base 2
+        in  toBin o2 * toBin co2
+    , sSolve = Just . snd . hylo btAlg btCoalg
     }
-
-maybeNE :: Maybe (NonEmpty a) -> [a]
-maybeNE Nothing = []
-maybeNE (Just (x :| xs)) = x : xs
-
-tearBinTrie :: (Bit -> Bit) -> BinTrie -> [Bit]
-tearBinTrie picker = snd . tearBinTrie_ picker
-
-tearBinTrie_ :: (Bit -> Bit) -> BinTrie -> (Int, [Bit])
-tearBinTrie_ picker = cata $ \case
-    BTLeafF xs -> (1, xs)
-    BTNodeF zeroes ones ->
-      let numZeroes = maybe 1 fst zeroes
-          numOnes   = maybe 1 fst ones
-          bitToKeep
-            | numZeroes > numOnes = picker Zero
-            | otherwise           = picker One
-          res = case bitToKeep of
-            Zero -> Zero : foldMap snd zeroes
-            One  -> One  : foldMap snd ones
-      in  (numZeroes + numOnes, res)
-
-buildBinTrie :: [[Bit]] -> BinTrie
-buildBinTrie = maybe (BTNode Nothing Nothing) buildBinTrie_ . NE.nonEmpty
-
-buildBinTrie_ :: NonEmpty [Bit] -> BinTrie
-buildBinTrie_ = ana $ \xs ->
-    case xs of
-      theOne:|[] -> BTLeafF theOne
-      _          ->
-        let V2 zeroes ones = peelOff (toList xs)
-        in  BTNodeF (NE.nonEmpty zeroes) (NE.nonEmpty ones)
 
 btCoalg :: NonEmpty [Bit] -> BinTrieF (NonEmpty [Bit])
 btCoalg (theOne :| theRest)
@@ -129,50 +95,27 @@ btCoalg (theOne :| theRest)
       let V2 zeroes ones = peelOff (theOne : theRest)
       in  BTNodeF (NE.nonEmpty zeroes) (NE.nonEmpty ones)
 
+-- | Collect both the oxygen (fst) and co2 (snd) answers at the same time
+--
+-- The first item int he tuple is the number of items under the given
+-- branch
 btAlg
-    :: (Bit -> Bit)
-    -> BinTrieF (Int, [Bit])
-    -> (Int, [Bit])
-btAlg picker = \case
-    BTLeafF xs -> (1, xs)
+    :: BinTrieF (Int, ([Bit], [Bit]))
+    -> (Int, ([Bit], [Bit]))
+btAlg = \case
+    BTLeafF xs -> (1, (xs, xs))
     BTNodeF zeroes ones ->
-      let numZeroes = maybe 1 fst zeroes
-          numOnes   = maybe 1 fst ones
-          bitToKeep
-            | numZeroes > numOnes = picker Zero
-            | otherwise           = picker One
-          res = case bitToKeep of
-            Zero -> Zero : foldMap snd zeroes
-            One  -> One  : foldMap snd ones
-      in  (numZeroes + numOnes, res)
-
-peelOff'
-    :: [NonEmpty Bit]
-    -> V2 [[Bit]]         -- ^ x is zeros, y is ones
-peelOff' = foldMap \case
-    Zero:|xs -> V2 [xs] []
-    One :|ys -> V2 [] [ys]
-
-searchFor
-    :: (Bit -> Bit)     -- ^ modify the picked bit (oxygen = id, co2 = flipBit)
-    -> [[Bit]]
-    -> [Bit]
-searchFor picker = apo (go . peelOff)
-  where
-    go :: V2 [[Bit]] -> ListF Bit (Either [Bit] [[Bit]])
-    go (V2 zeroes ones) = case valsToKeep of
-        []       -> Nil     -- this shouldn't ever happen given the problem statement
-        [theOne] -> Cons bitToKeep $ Left theOne
-        _        -> Cons bitToKeep $ Right valsToKeep
-      where
-        numZeroes = length zeroes
-        numOnes   = length ones
-        bitToKeep
-          | numZeroes > numOnes = picker Zero
-          | otherwise           = picker One
-        valsToKeep = case bitToKeep of
-          Zero -> zeroes
-          One  -> ones
+      let numZeroes = maybe 0 fst zeroes
+          numOnes   = maybe 0 fst ones
+          keepForO2
+            | numZeroes > numOnes = Zero
+            | otherwise           = One
+          keepFunc fstOrSnd = \case
+            Zero -> Zero : foldMap (fstOrSnd . snd) zeroes
+            One  -> One  : foldMap (fstOrSnd . snd) ones
+          newO2  = keepFunc fst keepForO2
+          newCO2 = keepFunc snd (flipBit keepForO2)
+      in  (numZeroes + numOnes, (newO2, newCO2))
 
 peelOff
     :: [[Bit]]

@@ -188,6 +188,7 @@ import qualified Data.Vector.Algorithms.Intro       as VAI
 import qualified Data.Vector.Generic                as VG
 import qualified Data.Vector.Generic.Sized          as SVG
 import qualified Data.Vector.Generic.Sized.Internal as SVG
+import qualified Numeric.Lens                       as L
 import qualified Text.Megaparsec                    as P
 import qualified Text.Megaparsec.Char               as P
 import qualified Text.Megaparsec.Char.Lexer         as PL
@@ -903,8 +904,10 @@ traverseLines :: (String -> Maybe a) -> String -> Maybe [a]
 traverseLines f = traverse f . lines
 
 -- | parse a binary string
+--
+-- this is just here for me to remember that i can use lens combinators lol
 parseBin :: String -> Maybe Int
-parseBin = fmap fst . listToMaybe . readInt 2 (`elem` "01") digitToInt
+parseBin = preview (L.base 2)
 
 mapMaybeLines :: (String -> Maybe a) -> String -> [a]
 mapMaybeLines f = mapMaybe f . lines
