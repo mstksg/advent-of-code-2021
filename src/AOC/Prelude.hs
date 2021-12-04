@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-compat-unqualified-imports #-}
+
 -- |
 -- Module      : AOC.Prelude
 -- Copyright   : (c) Justin Le 2021
@@ -32,6 +34,7 @@ import           Data.Bifunctor            as P
 import           Data.Char                 as P
 import           Data.Coerce               as P
 import           Data.Containers.ListUtils as P
+import           Data.List                 as P
 import           Data.Either               as P
 import           Data.Finite               as P (Finite, packFinite, getFinite, modulo, finites)
 import           Data.Foldable             as P
