@@ -968,6 +968,14 @@ unfoldedIterate _ f x = runIterate (N.induction1 start step :: Iterate n a)
     step :: Iterate m a -> Iterate ('N.S m) a
     step = coerce f
 
+instance (Functor v, FunctorWithIndex Int v) => FunctorWithIndex (Finite n) (SVG.Vector v n) where
+    imap f (SVG.Vector xs) = SVG.Vector $ imap (f . Finite . fromIntegral) xs
+
+instance (Foldable v, FoldableWithIndex Int v) => FoldableWithIndex (Finite n) (SVG.Vector v n) where
+    ifoldMap f (SVG.Vector xs) = ifoldMap (f . Finite . fromIntegral) xs
+
+instance (Traversable v, TraversableWithIndex Int v) => TraversableWithIndex (Finite n) (SVG.Vector v n) where
+    itraverse f (SVG.Vector xs) = SVG.Vector <$> itraverse (f . Finite . fromIntegral) xs
 
 -- instance Hashable a => Hashable (Seq a) where
 --     hashWithSalt s = hashWithSalt s . toList
