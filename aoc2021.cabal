@@ -71,6 +71,7 @@ common common-options
                      , profunctors
                      , psqueues
                      , recursion-schemes
+                     , safe
                      , semialign
                      , semigroupoids
                      , split

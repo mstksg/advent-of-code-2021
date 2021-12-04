@@ -1,6 +1,3 @@
-{-# OPTIONS_GHC -Wno-unused-imports   #-}
-{-# OPTIONS_GHC -Wno-unused-top-binds #-}
-
 -- |
 -- Module      : AOC.Challenge.Day04
 -- License     : BSD3
@@ -27,28 +24,30 @@ module AOC.Challenge.Day04 (
   , wins
   ) where
 
-import           AOC.Prelude
+import           AOC.Common               (loopEither)
+import           AOC.Solver               ((:~>)(..))
+import           Data.Bifunctor           (first)
+import           Data.Finite              (Finite, finites, combineProduct)
+import           Data.Foldable            (toList)
+import           Data.Functor.Foldable    (ana, hylo)
+import           Data.Functor.Foldable.TH (makeBaseFunctor)
+import           Data.IntMap              (IntMap)
+import           Data.List.NonEmpty       (NonEmpty)
+import           Data.List.Split          (splitOn)
+import           Data.Map                 (Map)
+import           Data.Maybe               (catMaybes, mapMaybe)
+import           Data.Ord                 (comparing)
+import           Data.Set                 (Set)
+import           Data.Traversable         (for)
+import           Data.Tuple               (swap)
+import           Safe.Foldable            (maximumByMay)
+import           Text.Read                (readMaybe)
+import qualified Data.IntMap              as IM
+import qualified Data.List.NonEmpty       as NE
+import qualified Data.Map                 as M
+import qualified Data.Set                 as S
 
-import           Data.Finite                     (combineProduct)
-import           Data.Functor.Foldable    hiding (fold)
-import           Data.Functor.Foldable.TH        (makeBaseFunctor)
-import qualified Data.Graph.Inductive            as G
-import qualified Data.IntMap                     as IM
-import qualified Data.IntSet                     as IS
-import qualified Data.List.NonEmpty              as NE
-import qualified Data.List.PointedList           as PL
-import qualified Data.List.PointedList.Circular  as PLC
-import qualified Data.Map                        as M
-import qualified Data.OrdPSQ                     as PSQ
-import qualified Data.Sequence                   as Seq
-import qualified Data.Set                        as S
-import qualified Data.Text                       as T
-import qualified Data.Vector                     as V
-import qualified Data.Vector.Sized               as SV
-import qualified Linear                          as L
-import qualified Text.Megaparsec                 as P
-import qualified Text.Megaparsec.Char            as P
-import qualified Text.Megaparsec.Char.Lexer      as PP
+type Board = IntMap (Finite 25)
 
 data Game = Step Game
           | Win Int    -- ^ checksum: sum of unseen numbers * last called
@@ -61,8 +60,8 @@ day04a = MkSol
     { sParse = parseCards . splitOn "\n\n"
     , sShow  = show
     , sSolve = \(picks, bs) ->
-            listToMaybe . map snd . sortOn fst $
-                mapMaybe (\b -> hylo gameAlg (gameCoalg b) (GameState picks S.empty)) bs
+        let initGames = map (\b -> ana (gameCoalg b) (GameState picks S.empty)) bs
+        in  loopEither stepAndWin initGames
     }
 
 day04b :: ([Int], [Board]) :~> Int
@@ -70,11 +69,11 @@ day04b = MkSol
     { sParse = parseCards . splitOn "\n\n"
     , sShow  = show
     , sSolve = \(picks, bs) ->
-            listToMaybe . reverse . map snd . sortOn fst $
-                mapMaybe (\b -> hylo gameAlg (gameCoalg b) (GameState picks S.empty)) bs
+          fmap snd
+        . maximumByMay (comparing fst)
+        . mapMaybe (\b -> hylo gameAlg (gameCoalg b) (GameState picks S.empty))
+        $ bs
     }
-
-type Board = SV.Vector 25 Int
 
 -- | All winning lines
 wins :: [Set (Finite 25)]
@@ -90,9 +89,9 @@ parseCards :: [String] -> Maybe ([Int], [Board])
 parseCards str = do
     pics:rest <- Just str
     picNums   <- traverse readMaybe $ splitOn "," pics
-    boards    <- for rest $ \qtr -> do
-      let oneBigVec = words . unwords . lines $ qtr
-      SV.fromList =<< traverse readMaybe oneBigVec
+    boards    <- for rest $
+          fmap (IM.fromList . flip zip finites)
+        . traverse readMaybe . words . unwords . lines
     pure (picNums, boards)
 
 data GameState = GameState
@@ -108,13 +107,13 @@ gameCoalg board GameState{..} =
   case gsQueue of
     []   -> LossF
     p:ps ->
-      let foundIx   = p `SV.elemIndex` board
+      let foundIx   = p `IM.lookup` board
           newMarked = maybe id S.insert foundIx gsMarked
           boardWon  = any (`S.isSubsetOf` newMarked) wins
-          unMarked  = flip ifoldMap' board $ \i q ->
-            if i `S.member` newMarked then 0 else Sum q
+          unMarked  = sum . IM.keys $
+            IM.filter (`S.notMember` newMarked) board
       in  if boardWon
-            then WinF $ getSum unMarked * p
+            then WinF $ unMarked * p
             else StepF $ GameState ps newMarked
 
 -- | returns number of turns taken, and the checksum
@@ -125,3 +124,22 @@ gameAlg = \case
     StepF x -> first (+1) <$> x
     WinF i  -> Just (1, i)
     LossF   -> Nothing
+
+-- | Step all games and quit on the first won
+stepAndWin :: [Game] -> Either (Maybe Int) [Game]
+stepAndWin = traverse $ \case
+    Step g' -> Right g'
+    Win i   -> Left (Just i)
+    Loss    -> Left Nothing     -- assume that one loss means all remaining have lost
+
+-- | Filter all won & lost games.  If none are remaining, show the wins
+-- emitted that final round.
+_stepAndFilter :: NonEmpty Game -> Either [Int] (NonEmpty Game)
+_stepAndFilter gs = case NE.nonEmpty (catMaybes remaining) of
+    Nothing  -> Left emitted
+    Just gs' -> Right gs'
+  where
+    (emitted, remaining) = for (toList gs) $ \case
+      Step g' -> ([], Just g')
+      Win i   -> ([i], Nothing)
+      Loss    -> ([], Nothing)

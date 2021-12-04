@@ -45,7 +45,6 @@ import           Data.IntMap.NonEmpty      as P (NEIntMap)
 import           Data.IntSet               as P (IntSet)
 import           Data.IntSet.NonEmpty      as P (NEIntSet)
 import           Data.Kind                 as P
-import qualified Data.List                 as P
 import           Data.List.NonEmpty        as P (NonEmpty(..), nonEmpty)
 import           Data.List.Split           as P
 import           Data.Map                  as P (Map)
