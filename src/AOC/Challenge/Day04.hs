@@ -8,15 +8,6 @@
 -- Day 4.  See "AOC.Solver" for the types used in this module!
 --
 -- After completing the challenge, it is recommended to:
---
--- *   Replace "AOC.Prelude" imports to specific modules (with explicit
---     imports) for readability.
--- *   Remove the @-Wno-unused-imports@ and @-Wno-unused-top-binds@
---     pragmas.
--- *   Replace the partial type signatures underscores in the solution
---     types @_ :~> _@ with the actual types of inputs and outputs of the
---     solution.  You can delete the type signatures completely and GHC
---     will recommend what should go in place of the underscores.
 
 module AOC.Challenge.Day04 (
     day04a
@@ -32,22 +23,20 @@ import           Data.Foldable            (toList)
 import           Data.Functor.Foldable    (ana, hylo)
 import           Data.Functor.Foldable.TH (makeBaseFunctor)
 import           Data.IntMap              (IntMap)
+import           Data.IntSet              (IntSet)
 import           Data.List.NonEmpty       (NonEmpty)
 import           Data.List.Split          (splitOn)
-import           Data.Map                 (Map)
 import           Data.Maybe               (catMaybes, mapMaybe)
 import           Data.Ord                 (comparing)
-import           Data.Set                 (Set)
 import           Data.Traversable         (for)
 import           Data.Tuple               (swap)
 import           Safe.Foldable            (maximumByMay)
 import           Text.Read                (readMaybe)
 import qualified Data.IntMap              as IM
+import qualified Data.IntSet              as IS
 import qualified Data.List.NonEmpty       as NE
-import qualified Data.Map                 as M
-import qualified Data.Set                 as S
 
-type Board = IntMap (Finite 25)
+type Board = IntMap Int
 
 data Game = Step Game
           | Win Int    -- ^ checksum: sum of unseen numbers * last called
@@ -60,7 +49,7 @@ day04a = MkSol
     { sParse = parseCards . splitOn "\n\n"
     , sShow  = show
     , sSolve = \(picks, bs) ->
-        let initGames = map (\b -> ana (gameCoalg b) (GameState picks S.empty)) bs
+        let initGames = map (\b -> ana (gameCoalg b) (GameState picks IS.empty)) bs
         in  loopEither stepAndWin initGames
     }
 
@@ -71,13 +60,13 @@ day04b = MkSol
     , sSolve = \(picks, bs) ->
           fmap snd
         . maximumByMay (comparing fst)
-        . mapMaybe (\b -> hylo gameAlg (gameCoalg b) (GameState picks S.empty))
+        . mapMaybe (\b -> hylo gameAlg (gameCoalg b) (GameState picks IS.empty))
         $ bs
     }
 
 -- | All winning lines
-wins :: [Set (Finite 25)]
-wins = S.fromList . map combineProduct <$> (verts ++ map (map swap) verts)
+wins :: [IntSet]
+wins = IS.fromList . map (fromIntegral . combineProduct) <$> (verts ++ map (map swap) verts)
   where
     verts :: [[(Finite 5, Finite 5)]]
     verts =
@@ -90,13 +79,13 @@ parseCards str = do
     pics:rest <- Just str
     picNums   <- traverse readMaybe $ splitOn "," pics
     boards    <- for rest $
-          fmap (IM.fromList . flip zip finites)
+          fmap (IM.fromList . flip zip [0..])
         . traverse readMaybe . words . unwords . lines
     pure (picNums, boards)
 
 data GameState = GameState
     { gsQueue  :: [Int]
-    , gsMarked :: Set (Finite 25)
+    , gsMarked :: IntSet
     }
 
 gameCoalg
@@ -108,10 +97,10 @@ gameCoalg board GameState{..} =
     []   -> LossF
     p:ps ->
       let foundIx   = p `IM.lookup` board
-          newMarked = maybe id S.insert foundIx gsMarked
-          boardWon  = any (`S.isSubsetOf` newMarked) wins
+          newMarked = maybe id IS.insert foundIx gsMarked
+          boardWon  = any (`IS.isSubsetOf` newMarked) wins
           unMarked  = sum . IM.keys $
-            IM.filter (`S.notMember` newMarked) board
+            IM.filter (`IS.notMember` newMarked) board
       in  if boardWon
             then WinF $ unMarked * p
             else StepF $ GameState ps newMarked
