@@ -23,6 +23,8 @@ Table of Contents
 
 * [Day 1](#day-1)
 * [Day 2](#day-2)
+* [Day 3](#day-3) *(no reflection yet)*
+* [Day 4](#day-4) *(no reflection yet)*
 
 Day 1
 ------
@@ -293,5 +295,92 @@ time                 1.710 ms   (1.616 ms .. 1.830 ms)
 mean                 1.730 ms   (1.673 ms .. 1.792 ms)
 std dev              215.9 μs   (168.1 μs .. 321.3 μs)
 variance introduced by outliers: 79% (severely inflated)
+```
+
+
+
+Day 3
+------
+
+<!--
+This section is generated and compiled by the build script at ./Build.hs from
+the file `./reflections/day03.md`.  If you want to edit this, edit
+that file instead!
+-->
+
+*[Prompt][d03p]* / *[Code][d03g]* / *[Rendered][d03h]* / *[Standalone Reflection Page][d03r]*
+
+[d03p]: https://adventofcode.com/2021/day/3
+[d03g]: https://github.com/mstksg/advent-of-code-2021/blob/master/src/AOC/Challenge/Day03.hs
+[d03h]: https://mstksg.github.io/advent-of-code-2021/src/AOC.Challenge.Day03.html
+[d03r]: https://github.com/mstksg/advent-of-code-2021/blob/master/reflections-out/day03.md
+
+*Reflection not yet written -- please check back later!*
+
+### Day 3 Benchmarks
+
+```
+>> Day 03a
+benchmarking...
+time                 1.556 ms   (1.538 ms .. 1.577 ms)
+                     0.998 R²   (0.997 R² .. 0.999 R²)
+mean                 1.560 ms   (1.545 ms .. 1.574 ms)
+std dev              58.01 μs   (47.70 μs .. 76.73 μs)
+variance introduced by outliers: 25% (moderately inflated)
+
+* parsing and formatting times excluded
+
+>> Day 03b
+benchmarking...
+time                 543.0 μs   (527.5 μs .. 568.7 μs)
+                     0.990 R²   (0.977 R² .. 0.999 R²)
+mean                 534.3 μs   (527.0 μs .. 551.6 μs)
+std dev              33.62 μs   (14.55 μs .. 58.08 μs)
+variance introduced by outliers: 55% (severely inflated)
+
+* parsing and formatting times excluded
+```
+
+
+
+Day 4
+------
+
+<!--
+This section is generated and compiled by the build script at ./Build.hs from
+the file `./reflections/day04.md`.  If you want to edit this, edit
+that file instead!
+-->
+
+*[Prompt][d04p]* / *[Code][d04g]* / *[Rendered][d04h]* / *[Standalone Reflection Page][d04r]*
+
+[d04p]: https://adventofcode.com/2021/day/4
+[d04g]: https://github.com/mstksg/advent-of-code-2021/blob/master/src/AOC/Challenge/Day04.hs
+[d04h]: https://mstksg.github.io/advent-of-code-2021/src/AOC.Challenge.Day04.html
+[d04r]: https://github.com/mstksg/advent-of-code-2021/blob/master/reflections-out/day04.md
+
+*Reflection not yet written -- please check back later!*
+
+### Day 4 Benchmarks
+
+```
+>> Day 04a
+benchmarking...
+time                 298.3 μs   (296.0 μs .. 301.3 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 298.2 μs   (297.3 μs .. 300.3 μs)
+std dev              4.367 μs   (2.639 μs .. 7.182 μs)
+
+* parsing and formatting times excluded
+
+>> Day 04b
+benchmarking...
+time                 784.5 μs   (773.9 μs .. 805.2 μs)
+                     0.997 R²   (0.994 R² .. 0.999 R²)
+mean                 752.0 μs   (739.7 μs .. 773.0 μs)
+std dev              53.03 μs   (40.49 μs .. 74.21 μs)
+variance introduced by outliers: 59% (severely inflated)
+
+* parsing and formatting times excluded
 ```
 

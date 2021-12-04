@@ -40,8 +40,8 @@ haddocks][haddock] --- more info below!
 | --------- | ----------- | --------- | ---------- | ---------- |
 | Day  1    | [x][d01r]   | [x][d01g] | [x][d01h]  | [x][d01b]  |
 | Day  2    | [x][d02r]   | [x][d02g] | [x][d02h]  | [x][d02b]  |
-| Day  3    |             |           |            |            |
-| Day  4    |             |           |            |            |
+| Day  3    |             | [x][d03g] | [x][d03h]  | [x][d03b]  |
+| Day  4    |             | [x][d04g] | [x][d04h]  | [x][d04b]  |
 | Day  5    |             |           |            |            |
 | Day  6    |             |           |            |            |
 | Day  7    |             |           |            |            |
@@ -303,3 +303,9 @@ All networking features are powered by *[advent-of-code-api][]*.
 [d02h]: https://mstksg.github.io/advent-of-code-2021/src/AOC.Challenge.Day02.html
 [d02r]: https://github.com/mstksg/advent-of-code-2021/blob/master/reflections.md#day-2
 [d02b]: https://github.com/mstksg/advent-of-code-2021/blob/master/reflections.md#day-2-benchmarks
+[d03g]: https://github.com/mstksg/advent-of-code-2021/blob/master/src/AOC/Challenge/Day03.hs
+[d03h]: https://mstksg.github.io/advent-of-code-2021/src/AOC.Challenge.Day03.html
+[d03b]: https://github.com/mstksg/advent-of-code-2021/blob/master/reflections.md#day-3-benchmarks
+[d04g]: https://github.com/mstksg/advent-of-code-2021/blob/master/src/AOC/Challenge/Day04.hs
+[d04h]: https://mstksg.github.io/advent-of-code-2021/src/AOC.Challenge.Day04.html
+[d04b]: https://github.com/mstksg/advent-of-code-2021/blob/master/reflections.md#day-4-benchmarks
