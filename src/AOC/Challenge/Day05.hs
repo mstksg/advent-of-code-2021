@@ -22,8 +22,8 @@
 --     will recommend what should go in place of the underscores.
 
 module AOC.Challenge.Day05 (
-    -- day05a
-  -- , day05b
+    day05a
+  , day05b
   ) where
 
 import           AOC.Prelude
@@ -47,14 +47,22 @@ import qualified Text.Megaparsec.Char.Lexer     as PP
 
 day05a :: _ :~> _
 day05a = MkSol
-    { sParse = Just . lines
+    { sParse = mapMaybeLinesJust $ \xs -> case map readMaybe . splitOn "," <$> words xs of
+        [Just a,Just b]:_:[Just x,Just y]:_ -> Just $ V2 (V2 a b :: Point) (V2 x y)
     , sShow  = show
-    , sSolve = Just
+    , sSolve = Just . length . M.filter (> 1) . freqs . concatMap expander . filter sameline
     }
+  where
+    expander (V2 p1 p2) = p1 : p2 : lineTo p1 p2
+    sameline (V2 (V2 x1 y1) (V2 x2 y2)) = x1 == x2 || y1 == y2
+-- lineTo :: Point -> Point -> [Point]
 
 day05b :: _ :~> _
 day05b = MkSol
     { sParse = sParse day05a
     , sShow  = show
-    , sSolve = Just
+    , sSolve = Just . length . M.filter (> 1) . freqs . concatMap expander
     }
+  where
+    expander (V2 p1 p2) = p1 : p2 : lineTo p1 p2
+    sameline (V2 (V2 x1 y1) (V2 x2 y2)) = x1 == x2 || y1 == y2
