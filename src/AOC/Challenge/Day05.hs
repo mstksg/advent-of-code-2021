@@ -28,6 +28,7 @@ module AOC.Challenge.Day05 (
 
 import           AOC.Prelude
 
+import           Data.Distributive
 import qualified Data.Graph.Inductive           as G
 import qualified Data.IntMap                    as IM
 import qualified Data.IntSet                    as IS
@@ -45,24 +46,24 @@ import qualified Text.Megaparsec                as P
 import qualified Text.Megaparsec.Char           as P
 import qualified Text.Megaparsec.Char.Lexer     as PP
 
-day05a :: _ :~> _
-day05a = MkSol
-    { sParse = mapMaybeLinesJust $ \xs -> case map readMaybe . splitOn "," <$> words xs of
-        [Just a,Just b]:_:[Just x,Just y]:_ -> Just $ V2 (V2 a b :: Point) (V2 x y)
-    , sShow  = show
-    , sSolve = Just . length . M.filter (> 1) . freqs . concatMap expander . filter sameline
-    }
-  where
-    expander (V2 p1 p2) = p1 : p2 : lineTo p1 p2
-    sameline (V2 (V2 x1 y1) (V2 x2 y2)) = x1 == x2 || y1 == y2
--- lineTo :: Point -> Point -> [Point]
+parseLine :: String -> Maybe (V2 Point)
+parseLine = (traverse . traverse) readMaybe
+        <=< listV2 . mapMaybe (listV2 . splitOn ",") . words
 
-day05b :: _ :~> _
-day05b = MkSol
-    { sParse = sParse day05a
+expander :: V2 Point -> [Point]
+expander (V2 a b) = a : b : lineTo a b
+
+day05 :: ([V2 Point] -> [V2 Point]) -> [V2 Point] :~> Int
+day05 preFilter = MkSol
+    { sParse = traverseLines parseLine
     , sShow  = show
-    , sSolve = Just . length . M.filter (> 1) . freqs . concatMap expander
+    , sSolve = Just . length . M.filter (> 1) . freqs . concatMap expander . preFilter
     }
+
+day05a :: [V2 Point] :~> Int
+day05a = day05 (filter sameLine)
   where
-    expander (V2 p1 p2) = p1 : p2 : lineTo p1 p2
-    sameline (V2 (V2 x1 y1) (V2 x2 y2)) = x1 == x2 || y1 == y2
+    sameLine = any (\(V2 a b) -> a == b) . distribute
+
+day05b :: [V2 Point] :~> Int
+day05b = day05 id

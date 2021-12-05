@@ -73,6 +73,12 @@ module AOC.Common (
   , _ListTup3
   , listTup4
   , _ListTup4
+  , listV2
+  , _ListV2
+  , listV3
+  , _ListV3
+  , listV4
+  , _ListV4
   , sortSizedBy
   , withAllSized
   , binaryFold
@@ -599,6 +605,15 @@ _ListTup = prism' (\(x,y) -> [x,y]) $ \case
     [x,y] -> Just (x,y)
     _     -> Nothing
 
+listV2 :: [a] -> Maybe (V2 a)
+listV2 (x:y:_) = Just $ V2 x y
+listV2 _       = Nothing
+
+_ListV2 :: Prism' [a] (V2 a)
+_ListV2 = prism' (\(V2 x y) -> [x,y]) $ \case
+    [x,y] -> Just $ V2 x y
+    _     -> Nothing
+
 listTup3 :: [a] -> Maybe (a,a,a)
 listTup3 (x:y:z:_) = Just (x,y,z)
 listTup3 _         = Nothing
@@ -608,6 +623,15 @@ _ListTup3 = prism' (\(x,y,z) -> [x,y,z]) $ \case
     [x,y,z] -> Just (x,y,z)
     _       -> Nothing
 
+listV3 :: [a] -> Maybe (V3 a)
+listV3 (x:y:z:_) = Just $ V3 x y z
+listV3 _         = Nothing
+
+_ListV3 :: Prism' [a] (V3 a)
+_ListV3 = prism' (\(V3 x y z) -> [x,y,z]) $ \case
+    [x,y,z] -> Just $ V3 x y z
+    _       -> Nothing
+
 listTup4 :: [a] -> Maybe (a,a,a,a)
 listTup4 (x:y:z:k:_) = Just (x,y,z,k)
 listTup4 _           = Nothing
@@ -615,6 +639,15 @@ listTup4 _           = Nothing
 _ListTup4 :: Prism' [a] (a, a, a, a)
 _ListTup4 = prism' (\(x,y,z,k) -> [x,y,z,k]) $ \case
     [x,y,z,k] -> Just (x,y,z,k)
+    _         -> Nothing
+
+listV4 :: [a] -> Maybe (V4 a)
+listV4 (x:y:z:k:_) = Just $ V4 x y z k
+listV4 _           = Nothing
+
+_ListV4 :: Prism' [a] (V4 a)
+_ListV4 = prism' (\(V4 x y z k) -> [x,y,z,k]) $ \case
+    [x,y,z,k] -> Just $ V4 x y z k
     _         -> Nothing
 
 -- | Delete a potential value from a 'Finite'.
