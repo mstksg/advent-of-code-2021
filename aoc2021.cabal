@@ -38,12 +38,14 @@ common common-options
                      , criterion
                      , data-default-class
                      , data-fix
+                     , data-interval
                      , data-memocombinators
                      , deepseq
                      , dependent-sum
                      , directory
                      , distributive
                      , dlist
+                     , extended-reals
                      , fgl
                      , filepath
                      , fin
