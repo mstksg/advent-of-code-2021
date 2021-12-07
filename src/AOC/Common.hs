@@ -99,6 +99,8 @@ module AOC.Common (
   , factorial
   , integerFactorial
   , pascals
+  , triangles
+  , triangleNumber
   , mapMaybeSet
   , symDiff
   , unfoldedIterate
@@ -966,6 +968,15 @@ integerFactorial n = go 2 1
 
 pascals :: [[Int]]
 pascals = repeat 1 : map (tail . L.scanl' (+) 0) pascals
+
+-- | the triangular numbers
+--
+-- triangles !! n = 1+2+..+n = (n * (n+1))/2
+triangles :: [Int]
+triangles = 0 : (pascals !! 2)
+
+triangleNumber :: Int -> Int
+triangleNumber n = (n * (n + 1)) `div` 2
 
 mapMaybeSet :: Ord b => (a -> Maybe b) -> Set a -> Set b
 mapMaybeSet f = S.fromList . mapMaybe f . S.toList

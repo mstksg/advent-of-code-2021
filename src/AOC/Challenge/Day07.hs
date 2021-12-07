@@ -28,6 +28,7 @@ module AOC.Challenge.Day07 (
 
 import           AOC.Prelude
 
+import           Safe.Foldable
 import qualified Data.Graph.Inductive           as G
 import qualified Data.IntMap                    as IM
 import qualified Data.IntSet                    as IS
@@ -45,26 +46,20 @@ import qualified Text.Megaparsec                as P
 import qualified Text.Megaparsec.Char           as P
 import qualified Text.Megaparsec.Char.Lexer     as PP
 
-day07a :: _ :~> _
-day07a = MkSol
-    { sParse = traverse (readMaybe @Int) . splitOn ","
+day07
+    :: (Int -> Int)         -- ^ loss function
+    -> [Int] :~> _
+day07 f = MkSol
+    { sParse = traverse readMaybe . splitOn ","
     , sShow  = show
-    , sSolve = \xs -> 
-        let mnx = minimum xs
-            mxx = maximum xs
-            findFuelFor targ = sum $ map (abs . subtract targ) xs
-        in  Just $ minimum [ findFuelFor i | i <- [mnx .. mxx]]
+    , sSolve = \xs ->
+        let xsMap = freqList xs
+            findFuelFor targ = sum $ map (\(n,x) -> f (abs (targ - x)) * n) xsMap
+        in  minimumMay [ findFuelFor i | i <- [minimum xs .. maximum xs]]
     }
 
-day07b :: _ :~> _
-day07b = MkSol
-    { sParse = traverse (readMaybe @Int) . splitOn ","
-    , sShow  = show
-    , sSolve = \xs -> 
-        let mnx = minimum xs
-            mxx = maximum xs
-            findFuelFor targ = sum $ map (tri . abs . subtract targ) xs
-        in  Just $ minimum [ findFuelFor i | i <- [mnx .. mxx]]
-    }
+day07a :: [Int] :~> Int
+day07a = day07 id
 
-tri n = (n * (n + 1)) `div` 2
+day07b :: [Int] :~> Int
+day07b = day07 triangleNumber
