@@ -22,8 +22,8 @@
 --     will recommend what should go in place of the underscores.
 
 module AOC.Challenge.Day07 (
-    -- day07a
-  -- , day07b
+    day07a
+  , day07b
   ) where
 
 import           AOC.Prelude
@@ -47,14 +47,24 @@ import qualified Text.Megaparsec.Char.Lexer     as PP
 
 day07a :: _ :~> _
 day07a = MkSol
-    { sParse = Just . lines
+    { sParse = traverse (readMaybe @Int) . splitOn ","
     , sShow  = show
-    , sSolve = Just
+    , sSolve = \xs -> 
+        let mnx = minimum xs
+            mxx = maximum xs
+            findFuelFor targ = sum $ map (abs . subtract targ) xs
+        in  Just $ minimum [ findFuelFor i | i <- [mnx .. mxx]]
     }
 
 day07b :: _ :~> _
 day07b = MkSol
-    { sParse = sParse day07a
+    { sParse = traverse (readMaybe @Int) . splitOn ","
     , sShow  = show
-    , sSolve = Just
+    , sSolve = \xs -> 
+        let mnx = minimum xs
+            mxx = maximum xs
+            findFuelFor targ = sum $ map (tri . abs . subtract targ) xs
+        in  Just $ minimum [ findFuelFor i | i <- [mnx .. mxx]]
     }
+
+tri n = (n * (n + 1)) `div` 2
