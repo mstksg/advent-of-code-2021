@@ -170,7 +170,7 @@ import           Data.Word
 import           Debug.Trace
 import           GHC.Generics                       (Generic)
 import           GHC.TypeNats
-import           Linear                             (V2(..), V3(..), V4(..), R1(..), R2(..), R3(..), R4(..))
+import           Linear                             (V2(..), V3(..), V4(..), R1(..), R2(..), R3(..), R4(..), Additive(..))
 import           Numeric.Natural
 import qualified Control.Foldl                      as F
 import qualified Control.Monad.Combinators          as P
@@ -1008,6 +1008,13 @@ instance (Foldable v, FoldableWithIndex Int v) => FoldableWithIndex (Finite n) (
 
 instance (Traversable v, TraversableWithIndex Int v) => TraversableWithIndex (Finite n) (SVG.Vector v n) where
     itraverse f (SVG.Vector xs) = SVG.Vector <$> itraverse (f . Finite . fromIntegral) xs
+
+instance (Functor v, KnownNat n, forall a. VG.Vector v a) => Additive (SVG.Vector v n) where
+    zero = SVG.replicate 0
+    x ^+^ y = SVG.zipWith (+) x y
+    x ^-^ y = SVG.zipWith (-) x y
+    liftU2 = SVG.zipWith
+    liftI2 = SVG.zipWith
 
 -- instance Hashable a => Hashable (Seq a) where
 --     hashWithSalt s = hashWithSalt s . toList

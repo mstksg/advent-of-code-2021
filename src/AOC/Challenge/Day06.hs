@@ -1,6 +1,3 @@
-{-# OPTIONS_GHC -Wno-unused-imports   #-}
-{-# OPTIONS_GHC -Wno-unused-top-binds #-}
-
 -- |
 -- Module      : AOC.Challenge.Day06
 -- License     : BSD3
@@ -9,60 +6,67 @@
 -- Portability : non-portable
 --
 -- Day 6.  See "AOC.Solver" for the types used in this module!
---
--- After completing the challenge, it is recommended to:
---
--- *   Replace "AOC.Prelude" imports to specific modules (with explicit
---     imports) for readability.
--- *   Remove the @-Wno-unused-imports@ and @-Wno-unused-top-binds@
---     pragmas.
--- *   Replace the partial type signatures underscores in the solution
---     types @_ :~> _@ with the actual types of inputs and outputs of the
---     solution.  You can delete the type signatures completely and GHC
---     will recommend what should go in place of the underscores.
 
 module AOC.Challenge.Day06 (
     day06a
   , day06b
   ) where
 
-import           AOC.Prelude
+import           AOC.Common                ()
+import           AOC.Solver                ((:~>)(..))
+import           Control.Monad             ((<=<))
+import           Control.Monad.ST          (runST)
+import           Data.Finite               (Finite, packFinite)
+import           Data.Foldable             (traverse_)
+import           Data.List.Split           (splitOn)
+import           Data.Semigroup            (stimes)
+import           GHC.TypeNats              (KnownNat)
+import           Text.Read                 (readMaybe)
+import qualified Data.Vector.Mutable.Sized as SMV
+import qualified Data.Vector.Sized         as SV
+import qualified Linear                    as L
 
-import qualified Data.Graph.Inductive           as G
-import qualified Data.IntMap                    as IM
-import qualified Data.IntSet                    as IS
-import qualified Data.List.NonEmpty             as NE
-import qualified Data.List.PointedList          as PL
-import qualified Data.List.PointedList.Circular as PLC
-import qualified Data.Map                       as M
-import qualified Data.OrdPSQ                    as PSQ
-import qualified Data.Sequence                  as Seq
-import qualified Data.Set                       as S
-import qualified Data.Text                      as T
-import qualified Data.Vector                    as V
-import qualified Linear                         as L
-import qualified Text.Megaparsec                as P
-import qualified Text.Megaparsec.Char           as P
-import qualified Text.Megaparsec.Char.Lexer     as PP
+newtype SquareMat n = SquareMat (SV.Vector n (SV.Vector n Int))
+  deriving stock (Show)
 
-day06a :: [Int] :~> _
-day06a = MkSol
-    { sParse = traverse readMaybe . splitOn ","
+applyMat :: KnownNat  n => SquareMat n -> SV.Vector n Int -> SV.Vector n Int
+applyMat (SquareMat xs) x = xs L.!* x
+
+step :: SquareMat 9
+step = SquareMat $ SV.fromTuple (
+    SV.fromTuple (0,1,0,0,0,0,0,0,0)
+  , SV.fromTuple (0,0,1,0,0,0,0,0,0)
+  , SV.fromTuple (0,0,0,1,0,0,0,0,0)
+  , SV.fromTuple (0,0,0,0,1,0,0,0,0)
+  , SV.fromTuple (0,0,0,0,0,1,0,0,0)
+  , SV.fromTuple (0,0,0,0,0,0,1,0,0)
+  , SV.fromTuple (1,0,0,0,0,0,0,1,0)
+  , SV.fromTuple (0,0,0,0,0,0,0,0,1)
+  , SV.fromTuple (1,0,0,0,0,0,0,0,0)
+  )
+
+instance KnownNat n => Semigroup (SquareMat n) where
+    SquareMat x <> SquareMat y = SquareMat (x L.!*! y)
+
+stepN :: Int -> SquareMat 9
+stepN n = stimes n step
+
+allocate :: forall n. KnownNat n => [Finite n] -> SV.Vector n Int
+allocate xs = runST do
+    v <- SMV.replicate 0
+    traverse_ (SMV.modify v (+1)) xs
+    SV.freeze v
+
+day06 :: Int -> [Finite 9] :~> Int
+day06 n = MkSol
+    { sParse = traverse (packFinite <=< readMaybe) . splitOn ","
     , sShow  = show
-    , sSolve = Just . length . (!!! 80) . strictIterate (>>= go)
+    -- this isn't going to bench very accurately because stepN n is auto-cached
+    , sSolve = Just . sum . (stepN n `applyMat`) . allocate
     }
-  where
-    go x
-      | x == 0 = [6,8]
-      | otherwise = [x-1]
 
-day06b :: _ :~> _
-day06b = MkSol
-    { sParse = sParse day06a
-    , sShow  = show
-    , sSolve = Just . sum . (!!! 256) . strictIterate (M.fromListWith (+) . (>>= go) . M.toList) . freqs
-    }
-  where
-    go (i, n)
-      | i == 0 = [(6,n),(8,n)]
-      | otherwise = [(i-1,n)]
+day06a :: [Finite 9] :~> Int
+day06a = day06 80
+
+day06b :: [Finite 9] :~> Int
+day06b = day06 256
