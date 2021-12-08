@@ -24,6 +24,10 @@
 module AOC.Challenge.Day08 (
     day08a
   , day08b
+  , allPossibleWires
+  , lookupTrie
+  , toWires
+  , Trie(..)
   ) where
 
 import           AOC.Prelude
@@ -33,7 +37,9 @@ import qualified Data.IntMap                    as IM
 import qualified Data.IntSet                    as IS
 import qualified Data.List.NonEmpty             as NE
 import qualified Data.List.PointedList          as PL
+import qualified Data.DList.DNonEmpty as DNE
 import qualified Data.List.PointedList.Circular as PLC
+import           Data.Tuple.Strict
 import qualified Data.Map                       as M
 import qualified Data.OrdPSQ                    as PSQ
 import qualified Data.Sequence                  as Seq
@@ -42,6 +48,8 @@ import qualified Data.Text                      as T
 import qualified Data.Vector                    as V
 import qualified Linear                         as L
 import qualified Text.Megaparsec                as P
+import           Data.Functor.Foldable    (ana, hylo)
+import           Data.Functor.Foldable.TH (makeBaseFunctor)
 import qualified Text.Megaparsec.Char           as P
 import qualified Text.Megaparsec.Char.Lexer     as PP
 
@@ -52,6 +60,8 @@ type Display = Set Segment
 newtype Wire = Wire { getWire :: Finite 7 }
   deriving stock (Eq, Ord, Show)
 type Wires = Set Wire
+
+type WireMap = Map Wire Segment
 
 _CharWire :: Prism' Char Wire
 _CharWire = prism'
@@ -71,6 +81,59 @@ day08a = MkSol
 mappings :: [Map Wire Segment]
 mappings = M.fromList . zip (Wire <$> finites) <$> permutations (Segment <$> finites)
 
+data Trie k a = TNode (Maybe a) (Map k (Trie k a))
+  deriving stock (Functor, Show)
+
+makeBaseFunctor ''Trie
+
+insertTrie
+    :: Ord k
+    => (a -> a -> a)        -- ^ new, old
+    -> [k]
+    -> a
+    -> Trie k a
+    -> Trie k a
+insertTrie f ks0 x = go ks0
+  where
+    go [] (TNode y ts) = TNode (Just $ maybe x (f x) y) ts
+    go (k:ks) (TNode y ts) = TNode y $
+      M.alter (Just . maybe (TNode (Just x) M.empty) (go ks)) k ts
+
+singletonTrie :: [k] -> a -> Trie k a
+singletonTrie ks0 x = go ks0
+  where
+    go [] = TNode (Just x) M.empty
+    go (k:ks) = TNode Nothing $ M.singleton k (go ks)
+
+lookupTrie :: Ord k => [k] -> Trie k a -> Maybe a
+lookupTrie [] (TNode x _) = x
+lookupTrie (k:ks) (TNode _ ts) = do
+    t <- M.lookup k ts
+    lookupTrie ks t
+
+trieFromListWith :: Ord k => (a -> a -> a) -> NonEmpty ([k], a) -> Trie k a
+trieFromListWith f = ana $ \xs ->
+    let T2 here there = flip foldMap xs $ \case
+          ([]  , a) -> T2 (Endo (a:)) mempty
+          (y:ys, a) -> T2 mempty (Endo ((y, DNE.singleton (ys, a)):))
+    in  TNodeF
+            (foldr1 f <$> NE.nonEmpty (appEndo here []))
+            (DNE.toNonEmpty <$> M.fromListWith (<>) (appEndo there []))
+    
+
+allPossibleWires :: Trie Wires (Set WireMap)
+allPossibleWires = trieFromListWith (<>) $ (second S.singleton) <$> NE.fromList poss
+  where
+    poss :: [([Wires], WireMap)]
+    poss = do
+      perm <- permutations $ Wire <$> finites
+      let mp = M.fromList $ zip (Segment <$> finites) perm
+          mp' = M.fromList $ zip perm (Segment <$> finites)
+          sigSet = sort $ S.map (mp M.!) <$> M.keys signals
+      visible <- catMaybes <$> traverse (\wrs -> [Nothing, Just wrs]) sigSet
+      pure (visible, mp')
+    
+
 signals :: Map (Set Segment) Char
 signals = M.fromList . flip zip ['0'..'9'] . map (S.fromList . map Segment) $
     [ [0,1,2,4,5,6]
@@ -84,6 +147,9 @@ signals = M.fromList . flip zip ['0'..'9'] . map (S.fromList . map Segment) $
     , [0,1,2,3,4,5,6]
     , [0,1,2,3,5,6]
     ]
+
+toWires :: String -> Wires
+toWires = S.fromList . map (^?! _CharWire)
 
 day08b :: [([Wires], [Wires])] :~> [Int]
 day08b = MkSol
