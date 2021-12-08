@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-redundant-constraints   #-}
+
 -- |
 -- Module      : AOC.Challenge.Day08
 -- License     : BSD3
@@ -12,62 +14,66 @@ module AOC.Challenge.Day08 (
   , day08b
   ) where
 
-import           AOC.Common      (listTup, traverseLines, countTrue)
-import           AOC.Solver      ((:~>)(..))
-import           Control.Lens    (Prism', prism', preview)
-import           Data.Bifunctor  (first)
-import           Data.Char       (chr, ord)
-import           Data.Finite     (Finite, finites, packFinite, getFinite)
-import           Data.Foldable   (toList)
-import           Data.List       (permutations)
-import           Data.List.Split (splitOn)
-import           Data.Map        (Map)
-import           Data.Maybe      (mapMaybe)
-import           Data.Set        (Set)
-import qualified Data.Map        as M
-import qualified Data.Set        as S
+import           AOC.Common             (listTup, traverseLines, countTrue)
+import           AOC.Common.FinitarySet (FinitarySet)
+import           AOC.Solver             ((:~>)(..))
+import           Control.Lens           (Prism', prism', preview)
+import           Data.Bifunctor         (first)
+import           Data.Char              (chr, ord)
+import           Data.Finitary          (Finitary)
+import           Data.Finite            (Finite, finites, packFinite, getFinite)
+import           Data.Foldable          (toList)
+import           Data.List              (permutations)
+import           Data.List.Split        (splitOn)
+import           Data.Map               (Map)
+import           Data.Maybe             (mapMaybe)
+import qualified AOC.Common.FinitarySet as FS
+import qualified Data.Map               as M
+import qualified Data.Set               as S
 
 -- way too much type safety
 
 -- | Actual physical segment on the display
 newtype Segment = Segment { getSegment :: Finite 7 }
   deriving stock (Eq, Ord, Show)
-type Display = Set Segment
+  deriving newtype Finitary
+type Display = FinitarySet Segment
 
 -- | abcdefg
 newtype Wire = Wire { getWire :: Finite 7 }
   deriving stock (Eq, Ord, Show)
-type Wires = Set Wire
+  deriving newtype Finitary
+type Wires = FinitarySet Wire
 
 -- | Map of wire displays to the digit they represent
 type OutputMap = Map Wires Int
 
-day08a :: [(Set Wires, [Wires])] :~> Int
+day08a :: [(FinitarySet Wires, [Wires])] :~> Int
 day08a = MkSol
     { sParse = traverseLines parseLine
     , sShow  = show
     , sSolve = Just . sum . map (countTrue isUnique . snd)
     }
   where
-    isUnique xs = length xs `S.member` uniques
+    isUnique xs = FS.length xs `S.member` uniques
       where
         uniques = S.fromList [2,4,3,7]
 
 -- | Map of all 9-digit observations to OutputMap they represent
-observationsMap :: Map (Set Wires) OutputMap
+observationsMap :: Map (FinitarySet Wires) OutputMap
 observationsMap = M.fromList do
     perm <- permutations $ Wire <$> finites
     let mp  = M.fromList $ zip (Segment <$> finites) perm
-        visible = (S.map . S.map) (mp M.!) signalSet
+        visible = (FS.map . FS.map) (mp M.!) signalSet
         outputMap = M.fromList do
           (a, sig) <- M.toList signals
-          pure (S.map (mp M.!) sig, a)
+          pure (FS.map (mp M.!) sig, a)
     pure (visible, outputMap)
   where
-    signalSet = S.fromList (toList signals)
+    signalSet = FS.fromList (toList signals)
 
 signals :: Map Int Display
-signals = M.fromList . zip [0..] . map (S.fromList . map Segment) $
+signals = M.fromList . zip [0..] . map (FS.fromList . map Segment) $
     [ [0,1,2,4,5,6]
     , [2,5]
     , [0,2,3,4,6]
@@ -80,7 +86,7 @@ signals = M.fromList . zip [0..] . map (S.fromList . map Segment) $
     , [0,1,2,3,5,6]
     ]
 
-day08b :: [(Set Wires, [Wires])] :~> [Int]
+day08b :: [(FinitarySet Wires, [Wires])] :~> [Int]
 day08b = MkSol
     { sParse = traverseLines parseLine
     , sShow  = show . sum
@@ -94,14 +100,14 @@ day08b = MkSol
 
 
 
-parseLine :: String -> Maybe (Set Wires, [Wires])
-parseLine = fmap (first S.fromList)
+parseLine :: String -> Maybe (FinitarySet Wires, [Wires])
+parseLine = fmap (first FS.fromList)
           . listTup
           . map (map toWires . words)
           . splitOn " | "
   where
     toWires :: String -> Wires
-    toWires = S.fromList . mapMaybe (preview _CharWire)
+    toWires = FS.fromList . mapMaybe (preview _CharWire)
     -- | Parse a Char as a Wire, for type safety
     _CharWire :: Prism' Char Wire
     _CharWire = prism'
