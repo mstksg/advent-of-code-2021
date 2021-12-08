@@ -25,6 +25,9 @@ Table of Contents
 * [Day 2](#day-2)
 * [Day 3](#day-3) *(no reflection yet)*
 * [Day 4](#day-4) *(no reflection yet)*
+* [Day 6](#day-6) *(no reflection yet)*
+* [Day 7](#day-7) *(no reflection yet)*
+* [Day 8](#day-8) *(no reflection yet)*
 
 Day 1
 ------
@@ -380,6 +383,134 @@ time                 784.5 μs   (773.9 μs .. 805.2 μs)
 mean                 752.0 μs   (739.7 μs .. 773.0 μs)
 std dev              53.03 μs   (40.49 μs .. 74.21 μs)
 variance introduced by outliers: 59% (severely inflated)
+
+* parsing and formatting times excluded
+```
+
+
+
+Day 6
+------
+
+<!--
+This section is generated and compiled by the build script at ./Build.hs from
+the file `./reflections/day06.md`.  If you want to edit this, edit
+that file instead!
+-->
+
+*[Prompt][d06p]* / *[Code][d06g]* / *[Rendered][d06h]* / *[Standalone Reflection Page][d06r]*
+
+[d06p]: https://adventofcode.com/2021/day/6
+[d06g]: https://github.com/mstksg/advent-of-code-2021/blob/master/src/AOC/Challenge/Day06.hs
+[d06h]: https://mstksg.github.io/advent-of-code-2021/src/AOC.Challenge.Day06.html
+[d06r]: https://github.com/mstksg/advent-of-code-2021/blob/master/reflections-out/day06.md
+
+*Reflection not yet written -- please check back later!*
+
+### Day 6 Benchmarks
+
+```
+>> Day 06a
+benchmarking...
+time                 3.421 μs   (3.415 μs .. 3.430 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 3.422 μs   (3.414 μs .. 3.438 μs)
+std dev              36.50 ns   (17.25 ns .. 65.66 ns)
+
+* parsing and formatting times excluded
+
+>> Day 06b
+benchmarking...
+time                 3.454 μs   (3.432 μs .. 3.475 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 3.457 μs   (3.446 μs .. 3.477 μs)
+std dev              54.27 ns   (25.71 ns .. 94.82 ns)
+variance introduced by outliers: 14% (moderately inflated)
+
+* parsing and formatting times excluded
+```
+
+
+
+Day 7
+------
+
+<!--
+This section is generated and compiled by the build script at ./Build.hs from
+the file `./reflections/day07.md`.  If you want to edit this, edit
+that file instead!
+-->
+
+*[Prompt][d07p]* / *[Code][d07g]* / *[Rendered][d07h]* / *[Standalone Reflection Page][d07r]*
+
+[d07p]: https://adventofcode.com/2021/day/7
+[d07g]: https://github.com/mstksg/advent-of-code-2021/blob/master/src/AOC/Challenge/Day07.hs
+[d07h]: https://mstksg.github.io/advent-of-code-2021/src/AOC.Challenge.Day07.html
+[d07r]: https://github.com/mstksg/advent-of-code-2021/blob/master/reflections-out/day07.md
+
+*Reflection not yet written -- please check back later!*
+
+### Day 7 Benchmarks
+
+```
+>> Day 07a
+benchmarking...
+time                 10.50 ms   (10.42 ms .. 10.59 ms)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 10.44 ms   (10.38 ms .. 10.51 ms)
+std dev              164.9 μs   (131.4 μs .. 207.5 μs)
+
+* parsing and formatting times excluded
+
+>> Day 07b
+benchmarking...
+time                 11.81 ms   (11.50 ms .. 12.41 ms)
+                     0.989 R²   (0.975 R² .. 0.999 R²)
+mean                 11.73 ms   (11.57 ms .. 12.11 ms)
+std dev              587.4 μs   (335.1 μs .. 910.6 μs)
+variance introduced by outliers: 20% (moderately inflated)
+
+* parsing and formatting times excluded
+```
+
+
+
+Day 8
+------
+
+<!--
+This section is generated and compiled by the build script at ./Build.hs from
+the file `./reflections/day08.md`.  If you want to edit this, edit
+that file instead!
+-->
+
+*[Prompt][d08p]* / *[Code][d08g]* / *[Rendered][d08h]* / *[Standalone Reflection Page][d08r]*
+
+[d08p]: https://adventofcode.com/2021/day/8
+[d08g]: https://github.com/mstksg/advent-of-code-2021/blob/master/src/AOC/Challenge/Day08.hs
+[d08h]: https://mstksg.github.io/advent-of-code-2021/src/AOC.Challenge.Day08.html
+[d08r]: https://github.com/mstksg/advent-of-code-2021/blob/master/reflections-out/day08.md
+
+*Reflection not yet written -- please check back later!*
+
+### Day 8 Benchmarks
+
+```
+>> Day 08a
+benchmarking...
+time                 28.48 μs   (28.41 μs .. 28.55 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 28.51 μs   (28.43 μs .. 28.62 μs)
+std dev              306.4 ns   (233.2 ns .. 427.0 ns)
+
+* parsing and formatting times excluded
+
+>> Day 08b
+benchmarking...
+time                 495.5 μs   (494.3 μs .. 497.3 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 498.1 μs   (497.1 μs .. 500.1 μs)
+std dev              5.367 μs   (4.515 μs .. 6.275 μs)
 
 * parsing and formatting times excluded
 ```

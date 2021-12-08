@@ -43,9 +43,9 @@ haddocks][haddock] --- more info below!
 | Day  3    |             | [x][d03g] | [x][d03h]  | [x][d03b]  |
 | Day  4    |             | [x][d04g] | [x][d04h]  | [x][d04b]  |
 | Day  5    |             |           |            |            |
-| Day  6    |             |           |            |            |
-| Day  7    |             |           |            |            |
-| Day  8    |             |           |            |            |
+| Day  6    |             | [x][d06g] | [x][d06h]  | [x][d06b]  |
+| Day  7    |             | [x][d07g] | [x][d07h]  | [x][d07b]  |
+| Day  8    |             | [x][d08g] | [x][d08h]  | [x][d08b]  |
 | Day  9    |             |           |            |            |
 | Day 10    |             |           |            |            |
 | Day 11    |             |           |            |            |
@@ -309,3 +309,12 @@ All networking features are powered by *[advent-of-code-api][]*.
 [d04g]: https://github.com/mstksg/advent-of-code-2021/blob/master/src/AOC/Challenge/Day04.hs
 [d04h]: https://mstksg.github.io/advent-of-code-2021/src/AOC.Challenge.Day04.html
 [d04b]: https://github.com/mstksg/advent-of-code-2021/blob/master/reflections.md#day-4-benchmarks
+[d06g]: https://github.com/mstksg/advent-of-code-2021/blob/master/src/AOC/Challenge/Day06.hs
+[d06h]: https://mstksg.github.io/advent-of-code-2021/src/AOC.Challenge.Day06.html
+[d06b]: https://github.com/mstksg/advent-of-code-2021/blob/master/reflections.md#day-6-benchmarks
+[d07g]: https://github.com/mstksg/advent-of-code-2021/blob/master/src/AOC/Challenge/Day07.hs
+[d07h]: https://mstksg.github.io/advent-of-code-2021/src/AOC.Challenge.Day07.html
+[d07b]: https://github.com/mstksg/advent-of-code-2021/blob/master/reflections.md#day-7-benchmarks
+[d08g]: https://github.com/mstksg/advent-of-code-2021/blob/master/src/AOC/Challenge/Day08.hs
+[d08h]: https://mstksg.github.io/advent-of-code-2021/src/AOC.Challenge.Day08.html
+[d08b]: https://github.com/mstksg/advent-of-code-2021/blob/master/reflections.md#day-8-benchmarks
