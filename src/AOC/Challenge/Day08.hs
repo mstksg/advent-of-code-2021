@@ -12,19 +12,18 @@ module AOC.Challenge.Day08 (
   , day08b
   ) where
 
-import           AOC.Common      (listTup, traverseLines, mapMaybeSet, countTrue)
+import           AOC.Common      (listTup, traverseLines, countTrue)
 import           AOC.Solver      ((:~>)(..))
 import           Control.Lens    (Prism', prism', preview)
-import           Control.Monad   ((<=<))
 import           Data.Bifunctor  (first)
 import           Data.Char       (chr, ord)
 import           Data.Finite     (Finite, finites, packFinite, getFinite)
+import           Data.Foldable   (toList)
 import           Data.List       (permutations)
 import           Data.List.Split (splitOn)
 import           Data.Map        (Map)
 import           Data.Maybe      (mapMaybe)
 import           Data.Set        (Set)
-import           Text.Read       (readMaybe)
 import qualified Data.Map        as M
 import qualified Data.Set        as S
 
@@ -40,8 +39,8 @@ newtype Wire = Wire { getWire :: Finite 7 }
   deriving stock (Eq, Ord, Show)
 type Wires = Set Wire
 
--- | Map of wire (abcdefg) to segment
-type WireMap = Map Wire Segment
+-- | Map of wire displays to the digit they represent
+type OutputMap = Map Wires Int
 
 day08a :: [(Set Wires, [Wires])] :~> Int
 day08a = MkSol
@@ -54,17 +53,21 @@ day08a = MkSol
       where
         uniques = S.fromList [2,4,3,7]
 
--- | Map of all 9-digit observations to the wiremap that cuses them
-observationsMap :: Map (Set Wires) WireMap
+-- | Map of all 9-digit observations to OutputMap they represent
+observationsMap :: Map (Set Wires) OutputMap
 observationsMap = M.fromList do
-      perm <- permutations $ Wire <$> finites
-      let mp  = M.fromList $ zip (Segment <$> finites) perm
-          mp' = M.fromList $ zip perm (Segment <$> finites)
-          visible = (S.map . S.map) (mp M.!) (M.keysSet signals)
-      pure (visible, mp')
+    perm <- permutations $ Wire <$> finites
+    let mp  = M.fromList $ zip (Segment <$> finites) perm
+        visible = (S.map . S.map) (mp M.!) signalSet
+        outputMap = M.fromList do
+          (a, sig) <- M.toList signals
+          pure (S.map (mp M.!) sig, a)
+    pure (visible, outputMap)
+  where
+    signalSet = S.fromList (toList signals)
 
-signals :: Map Display Char
-signals = M.fromList . flip zip ['0'..'9'] . map (S.fromList . map Segment) $
+signals :: Map Int Display
+signals = M.fromList . zip [0..] . map (S.fromList . map Segment) $
     [ [0,1,2,4,5,6]
     , [2,5]
     , [0,2,3,4,6]
@@ -77,19 +80,14 @@ signals = M.fromList . flip zip ['0'..'9'] . map (S.fromList . map Segment) $
     , [0,1,2,3,5,6]
     ]
 
--- | Use a wiremap to turn a string into the integer it represents
-applyWireMap :: WireMap -> [Wires] -> Maybe Int
-applyWireMap mp = readMaybe <=< traverse decodeDigit
-  where
-    decodeDigit = (`M.lookup` signals) . mapMaybeSet (`M.lookup` mp)
-
 day08b :: [(Set Wires, [Wires])] :~> [Int]
 day08b = MkSol
     { sParse = traverseLines parseLine
     , sShow  = show . sum
     , sSolve = traverse $ \(xs, ys) -> do
-        mp <- M.lookup xs observationsMap
-        applyWireMap mp ys
+        outputMap <- M.lookup xs observationsMap
+        [a,b,c,d] <- traverse (`M.lookup` outputMap) ys
+        pure (a*1000+b*100+c*10+d)
     }
 
 
