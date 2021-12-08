@@ -21,13 +21,10 @@
 --     solution.  You can delete the type signatures completely and GHC
 --     will recommend what should go in place of the underscores.
 
-module AOC.Challenge.Day08 where
-
--- module AOC.Challenge.Day08 (
---     day08a
---   , day08b
---   , mappings
---   ) where
+module AOC.Challenge.Day08 (
+    day08a
+  , day08b
+  ) where
 
 import           AOC.Prelude
 
@@ -47,6 +44,12 @@ import qualified Linear                         as L
 import qualified Text.Megaparsec                as P
 import qualified Text.Megaparsec.Char           as P
 import qualified Text.Megaparsec.Char.Lexer     as PP
+
+type Segment = Finite 7
+type Display = Set Segment
+
+type Wire = Finite 7
+type Wires = Set Wire
 
 day08a :: _ :~> _
 day08a = MkSol
@@ -77,32 +80,20 @@ signals = M.fromList . flip zip ['0'..'9'] $
     , S.fromList [0,1,2,3,5,6]
     ]
 
-day08b :: _ :~> [Int]
+day08b :: [([Set Char], [Set Char])] :~> [Int]
 day08b = MkSol
     { sParse = traverseLines $
-         listTup . map words . splitOn " | "
-    , sShow  = show . sum . traceShowId 
-    , sSolve = traverse $ \(xs, ys) -> do
-        firstJust (`decodeFromMapping` (xs, ys)) mappings
-        -- guard $ length ys == 4
-        -- readMaybe $ map ((signals M.!) . S.fromList . map (mapping M.!)) ys
-        -- let allWords = traceShowId $ foldMap (S.fromList . uncurry (++)) xs
-        -- in  map 
-        -- firstJust (\mp -> mp <$ guard
-        --                             (all
-        --                               ((`M.member` signals) . S.fromList . map (mp M.!)
-
-        --                               )
-        --                             allWords)
-        --                         ) mappings
+         listTup . map (map S.fromList . words) . splitOn " | "
+    , sShow  = show . sum
+    , sSolve = traverse $ \xs -> firstJust (`decodeFromMapping` xs) mappings
     }
   where
-decodeDigit :: Map Char (Finite 7) -> String -> Maybe Char
-decodeDigit mp = (`M.lookup` signals) . S.fromList . map (mp M.!)
-decodeString :: Map Char (Finite 7) -> [String] -> Maybe Int
-decodeString mp = readMaybe <=< traverse (decodeDigit mp)
-decodeFromMapping :: Map Char (Finite 7) -> ([String], [String]) -> Maybe Int
-decodeFromMapping mp (xs, ys) = do
-  _ <- traverse (decodeDigit mp) xs
-  decodeString mp ys
+    decodeDigit :: Map Char (Finite 7) -> Set Char -> Maybe Char
+    decodeDigit mp = (`M.lookup` signals) . mapMaybeSet (`M.lookup` mp)
+    decodeString :: Map Char (Finite 7) -> [Set Char] -> Maybe Int
+    decodeString mp = readMaybe <=< traverse (decodeDigit mp)
+    decodeFromMapping :: Map Char (Finite 7) -> ([Set Char], [Set Char]) -> Maybe Int
+    decodeFromMapping mp (xs, ys) = do
+      traverse_ (decodeDigit mp) xs
+      decodeString mp ys
 
