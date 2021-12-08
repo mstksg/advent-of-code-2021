@@ -86,11 +86,11 @@ signals = M.fromList . zip [0..] . map (FS.fromList . map Segment) $
     , [0,1,2,3,5,6]
     ]
 
-day08b :: [(FinitarySet Wires, [Wires])] :~> [Int]
+day08b :: [(FinitarySet Wires, [Wires])] :~> Int
 day08b = MkSol
     { sParse = traverseLines parseLine
-    , sShow  = show . sum
-    , sSolve = traverse $ \(xs, ys) -> do
+    , sShow  = show
+    , sSolve = fmap (fmap sum) . traverse $ \(xs, ys) -> do
         outputMap <- M.lookup xs observationsMap
         [a,b,c,d] <- traverse (`M.lookup` outputMap) ys
         pure (a*1000+b*100+c*10+d)

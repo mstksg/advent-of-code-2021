@@ -455,20 +455,19 @@ that file instead!
 ```
 >> Day 07a
 benchmarking...
-time                 10.50 ms   (10.42 ms .. 10.59 ms)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 10.44 ms   (10.38 ms .. 10.51 ms)
-std dev              164.9 μs   (131.4 μs .. 207.5 μs)
+time                 410.4 μs   (407.7 μs .. 414.0 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 409.6 μs   (408.0 μs .. 412.3 μs)
+std dev              7.499 μs   (4.702 μs .. 12.56 μs)
 
 * parsing and formatting times excluded
 
 >> Day 07b
 benchmarking...
-time                 11.81 ms   (11.50 ms .. 12.41 ms)
-                     0.989 R²   (0.975 R² .. 0.999 R²)
-mean                 11.73 ms   (11.57 ms .. 12.11 ms)
-std dev              587.4 μs   (335.1 μs .. 910.6 μs)
-variance introduced by outliers: 20% (moderately inflated)
+time                 451.6 μs   (447.5 μs .. 456.9 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 444.5 μs   (442.3 μs .. 447.2 μs)
+std dev              8.207 μs   (6.712 μs .. 11.79 μs)
 
 * parsing and formatting times excluded
 ```

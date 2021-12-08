@@ -12,22 +12,34 @@ module AOC.Challenge.Day07 (
   , day07b
   ) where
 
-import           AOC.Common      (triangleNumber, freqList)
-import           AOC.Solver      ((:~>)(..))
-import           Data.List.Split (splitOn)
-import           Safe.Foldable   (minimumMay)
-import           Text.Read       (readMaybe)
+import           AOC.Common        (freqs, triangleNumber)
+import           AOC.Common.Search (binaryFindMin)
+import           AOC.Solver        ((:~>)(..))
+import           Control.Monad     (guard)
+import           Data.List.Split   (splitOn)
+import           Data.Semigroup    (Sum(..))
+import           Text.Read         (readMaybe)
+import qualified Data.Map          as M
+import qualified Data.Vector       as V
 
 day07
     :: (Int -> Int)         -- ^ loss function
-    -> [Int] :~> _
+    -> [Int] :~> Int
 day07 f = MkSol
     { sParse = traverse readMaybe . splitOn ","
     , sShow  = show
-    , sSolve = \xs ->
-        let xsMap = freqList xs
-            findFuelFor targ = sum $ map (\(n,x) -> f (abs (targ - x)) * n) xsMap
-        in  minimumMay [ findFuelFor i | i <- [minimum xs .. maximum xs]]
+    , sSolve = \xs -> do
+        let xsMap = freqs xs
+            findFuelFor targ = getSum $ M.foldMapWithKey (\x n -> Sum $ f (abs (targ - x)) * n) xsMap
+        (minX, _) <- M.lookupMin xsMap
+        (maxX, _) <- M.lookupMax xsMap
+        let fuelVector = V.generate (maxX + 1 - minX) $ \i -> findFuelFor (i + minX)
+        binaryFindMin (\x ->
+                let fX  = fuelVector V.! x
+                    fX1 = fuelVector V.! (x+1)
+                in  fX <$ guard (fX1 > fX)
+            )
+          minX maxX
     }
 
 day07a :: [Int] :~> Int
