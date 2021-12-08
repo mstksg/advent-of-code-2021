@@ -45,54 +45,59 @@ import qualified Text.Megaparsec                as P
 import qualified Text.Megaparsec.Char           as P
 import qualified Text.Megaparsec.Char.Lexer     as PP
 
-type Segment = Finite 7
+newtype Segment = Segment { getSegment :: Finite 7 }
+  deriving stock (Eq, Ord, Show)
 type Display = Set Segment
 
-type Wire = Finite 7
+newtype Wire = Wire { getWire :: Finite 7 }
+  deriving stock (Eq, Ord, Show)
 type Wires = Set Wire
+
+_CharWire :: Prism' Char Wire
+_CharWire = prism'
+              (\(Wire w) -> chr $ fromIntegral (getFinite w) + ord 'a')
+              (\c -> Wire <$> packFinite (fromIntegral (ord c - ord 'a')))
 
 day08a :: _ :~> _
 day08a = MkSol
     { sParse = traverseLines $
          listTup . map words . splitOn " | "
-    -- { sParse = _ . splitOn ","
     , sShow  = show
     , sSolve = Just . countTrue ((`elem` udigs) . length) . concatMap snd
     }
   where
     udigs = [2,4,3,7]
 
-mappings :: [Map Char (Finite 7)]
-mappings = M.fromList . zip "abcdefg" <$> permutations finites
-        -- sequence $ M.fromList ((,finites) <$> "abcdefg")
+mappings :: [Map Wire Segment]
+mappings = M.fromList . zip (Wire <$> finites) <$> permutations (Segment <$> finites)
 
-signals :: Map (Set (Finite 7)) Char
-signals = M.fromList . flip zip ['0'..'9'] $
-    [ S.fromList [0,1,2,4,5,6]
-    , S.fromList [2,5]
-    , S.fromList [0,2,3,4,6]
-    , S.fromList [0,2,3,5,6]
-    , S.fromList [1,2,3,5]
-    , S.fromList [0,1,3,5,6]
-    , S.fromList [0,1,3,4,5,6]
-    , S.fromList [0,2,5]
-    , S.fromList [0,1,2,3,4,5,6]
-    , S.fromList [0,1,2,3,5,6]
+signals :: Map (Set Segment) Char
+signals = M.fromList . flip zip ['0'..'9'] . map (S.fromList . map Segment) $
+    [ [0,1,2,4,5,6]
+    , [2,5]
+    , [0,2,3,4,6]
+    , [0,2,3,5,6]
+    , [1,2,3,5]
+    , [0,1,3,5,6]
+    , [0,1,3,4,5,6]
+    , [0,2,5]
+    , [0,1,2,3,4,5,6]
+    , [0,1,2,3,5,6]
     ]
 
-day08b :: [([Set Char], [Set Char])] :~> [Int]
+day08b :: [([Wires], [Wires])] :~> [Int]
 day08b = MkSol
     { sParse = traverseLines $
-         listTup . map (map S.fromList . words) . splitOn " | "
+         listTup . map (map (S.fromList . map (^?! _CharWire)) . words) . splitOn " | "
     , sShow  = show . sum
     , sSolve = traverse $ \xs -> firstJust (`decodeFromMapping` xs) mappings
     }
   where
-    decodeDigit :: Map Char (Finite 7) -> Set Char -> Maybe Char
+    decodeDigit :: Map Wire Segment -> Wires -> Maybe Char
     decodeDigit mp = (`M.lookup` signals) . mapMaybeSet (`M.lookup` mp)
-    decodeString :: Map Char (Finite 7) -> [Set Char] -> Maybe Int
+    decodeString :: Map Wire Segment -> [Wires] -> Maybe Int
     decodeString mp = readMaybe <=< traverse (decodeDigit mp)
-    decodeFromMapping :: Map Char (Finite 7) -> ([Set Char], [Set Char]) -> Maybe Int
+    decodeFromMapping :: Map Wire Segment -> ([Wires], [Wires]) -> Maybe Int
     decodeFromMapping mp (xs, ys) = do
       traverse_ (decodeDigit mp) xs
       decodeString mp ys
