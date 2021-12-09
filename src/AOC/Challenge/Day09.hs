@@ -14,16 +14,13 @@ module AOC.Challenge.Day09 (
   , day09b
   ) where
 
-import           AOC.Common       (freqs, digitToIntSafe)
+import           AOC.Common       (freqs, digitToIntSafe, firstJust)
 import           AOC.Common.Point (Point, cardinalNeighbs, parseAsciiMap)
 import           AOC.Solver       ((:~>)(..))
 import           Control.Monad    (mfilter)
 import           Data.Foldable    (toList)
 import           Data.List        (sortBy)
 import           Data.Map         (Map)
-import           Data.Maybe       (mapMaybe)
-import           Data.Ord         (comparing)
-import           Safe.Foldable    (minimumByMay)
 import qualified Data.Map         as M
 
 -- | Find low points and their heights
@@ -60,7 +57,6 @@ day09b = MkSol
 flowMap :: Map Point Int -> Map Point (Maybe Point)
 flowMap mp = M.mapWithKey go mp
   where
-    go p i = fmap fst . minimumByMay (comparing snd) $
-               mapMaybe getGrad (cardinalNeighbs p)
+    go p i = firstJust getGrad (cardinalNeighbs p)
       where
-        getGrad q = (q,) <$> mfilter (< i) (M.lookup q mp)
+        getGrad q = q <$ mfilter (< i) (M.lookup q mp)
