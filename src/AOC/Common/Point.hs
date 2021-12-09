@@ -39,6 +39,7 @@ module AOC.Common.Point (
   , boundingBox'
   , inBoundingBox
   , minCorner, minCorner'
+  , contiguousRegions
   , shiftToZero
   , shiftToZero'
   , parseAsciiMap
@@ -170,6 +171,26 @@ fullNeighbsSet p = S.fromDistinctAscList $
     | d <- sequence (pure [-1,0,1])
     , d /= pure 0
     ]
+
+-- | Find contiguous regions by cardinal neighbors
+contiguousRegions
+    :: Set Point
+    -> Set (Set Point)
+contiguousRegions = startNewPool S.empty
+  where
+    startNewPool seenPools remaining = case S.minView remaining of
+      Nothing      -> seenPools
+      Just (x, xs) ->
+        let (newPool, remaining') = fillUp (NES.singleton x) S.empty xs
+        in  startNewPool (S.insert newPool seenPools) remaining'
+    fillUp boundary internal remaining = case NES.nonEmptySet newBoundary of
+        Nothing -> (newInternal, remaining)
+        Just nb -> fillUp nb newInternal newRemaining
+      where
+        edgeCandidates = foldMap' cardinalNeighbsSet boundary `S.difference` internal
+        newBoundary = edgeCandidates `S.intersection` remaining
+        newInternal = internal `S.union` NES.toSet boundary
+        newRemaining = remaining `S.difference` edgeCandidates
 
 memoPoint :: Memo Point
 memoPoint = Memo.wrap (uncurry V2) (\(V2 x y) -> (x, y)) $
