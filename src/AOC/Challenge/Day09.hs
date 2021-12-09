@@ -22,8 +22,8 @@
 --     will recommend what should go in place of the underscores.
 
 module AOC.Challenge.Day09 (
-    -- day09a
-  -- , day09b
+    day09a
+  , day09b
   ) where
 
 import           AOC.Prelude
@@ -47,14 +47,52 @@ import qualified Text.Megaparsec.Char.Lexer     as PP
 
 day09a :: _ :~> _
 day09a = MkSol
-    { sParse = Just . lines
+    { sParse = Just . parseAsciiMap (Just . digitToInt)
     , sShow  = show
-    , sSolve = Just
-    }
+    , sSolve = \xs -> Just . sum $ M.mapWithKey (go xs) xs
+    } 
+  where
+    go mp p i 
+        | and $ mapMaybe f (cardinalNeighbs p) = (i+1)
+        | otherwise = 0
+      where
+        f q = case M.lookup q mp of
+          Nothing -> Nothing
+          Just j -> Just $ j > i
+-- cardinalNeighbs :: Point -> [Point]
+
+
+    -- go xs = sum $ zipWith3 f xs (drop 1 xs) (drop 2 xs)
+    --   where
+    --     f a b c
+    --      | a > b && c > b = 1 + b
+    --      | otherwise = 0
 
 day09b :: _ :~> _
 day09b = MkSol
-    { sParse = sParse day09a
+    { sParse = Just . parseAsciiMap (Just . digitToInt)
     , sShow  = show
-    , sSolve = Just
-    }
+    , sSolve = \xs -> Just $
+        let lowpoints = M.keys $ M.filterWithKey (go xs) xs
+        in  product . take 3 . reverse . sort . map (S.size . floodFill (spreadout xs) . S.singleton) $ lowpoints
+    } 
+  where
+    go mp p i = and $ mapMaybe f (cardinalNeighbs p)
+      where
+        f q = case M.lookup q mp of
+          Nothing -> Nothing
+          Just j -> Just $ j > i
+    spreadout mp p = S.fromList . filter valid . cardinalNeighbs $ p
+      where
+        valid q = case M.lookup q mp of
+          Nothing -> False
+          Just i  -> i  /= 9
+
+
+-- -- | Flood fill from a starting set
+-- floodFill
+--     :: Ord a
+--     => (a -> Set a)     -- ^ Expansion (be sure to limit allowed points)
+--     -> Set a            -- ^ Start points
+--     -> Set a            -- ^ Flood filled
+-- floodFill f = snd . floodFillCount f

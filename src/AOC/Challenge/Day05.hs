@@ -100,6 +100,14 @@ day05b = day05 id
 --   solve y = (4-0)`div`2 = 2
 --   and so check if 2 is in range
 
+-- sloped: <t, z+m*t>
+--   intersect with other slope:
+--   <t, z1 + m1 * t> == <t, z2 + m2 * t> (t = x = equal)
+--   solve: z1 + m1 * t == z2 + m2 * t
+--          m1 * t = m2 * t + (z2 - z1)
+--          t = (m2 * t + z2 - z1) / m1
+--
+
 overlaps :: Line -> Line -> [V2 Integer]
 overlaps = \case
     Line Horiz y1 rx1 -> \case

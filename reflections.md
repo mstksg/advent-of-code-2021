@@ -25,6 +25,7 @@ Table of Contents
 * [Day 2](#day-2)
 * [Day 3](#day-3) *(no reflection yet)*
 * [Day 4](#day-4) *(no reflection yet)*
+* [Day 5](#day-5) *(no reflection yet)*
 * [Day 6](#day-6) *(no reflection yet)*
 * [Day 7](#day-7) *(no reflection yet)*
 * [Day 8](#day-8) *(no reflection yet)*
@@ -383,6 +384,50 @@ time                 784.5 μs   (773.9 μs .. 805.2 μs)
 mean                 752.0 μs   (739.7 μs .. 773.0 μs)
 std dev              53.03 μs   (40.49 μs .. 74.21 μs)
 variance introduced by outliers: 59% (severely inflated)
+
+* parsing and formatting times excluded
+```
+
+
+
+Day 5
+------
+
+<!--
+This section is generated and compiled by the build script at ./Build.hs from
+the file `./reflections/day05.md`.  If you want to edit this, edit
+that file instead!
+-->
+
+*[Prompt][d05p]* / *[Code][d05g]* / *[Rendered][d05h]* / *[Standalone Reflection Page][d05r]*
+
+[d05p]: https://adventofcode.com/2021/day/5
+[d05g]: https://github.com/mstksg/advent-of-code-2021/blob/master/src/AOC/Challenge/Day05.hs
+[d05h]: https://mstksg.github.io/advent-of-code-2021/src/AOC.Challenge.Day05.html
+[d05r]: https://github.com/mstksg/advent-of-code-2021/blob/master/reflections-out/day05.md
+
+*Reflection not yet written -- please check back later!*
+
+### Day 5 Benchmarks
+
+```
+>> Day 05a
+benchmarking...
+time                 5.318 ms   (5.256 ms .. 5.390 ms)
+                     0.998 R²   (0.997 R² .. 0.999 R²)
+mean                 5.236 ms   (5.194 ms .. 5.298 ms)
+std dev              149.2 μs   (117.1 μs .. 207.5 μs)
+variance introduced by outliers: 12% (moderately inflated)
+
+* parsing and formatting times excluded
+
+>> Day 05b
+benchmarking...
+time                 11.37 ms   (11.19 ms .. 11.58 ms)
+                     0.997 R²   (0.995 R² .. 0.999 R²)
+mean                 11.48 ms   (11.36 ms .. 11.73 ms)
+std dev              417.9 μs   (285.5 μs .. 608.1 μs)
+variance introduced by outliers: 13% (moderately inflated)
 
 * parsing and formatting times excluded
 ```
