@@ -40,7 +40,7 @@ day09a :: Map Point Int :~> Int
 day09a = MkSol
     { sParse = Just . parseAsciiMap (mfilter (< 9) . digitToIntSafe)
     , sShow  = show
-    , sSolve = Just . sum . map ((+ 1) . snd) . findLows . M.filter (< 9)
+    , sSolve = Just . sum . map ((+ 1) . snd) . findLows
     }
 
 day09b :: Map Point Int :~> Int
@@ -50,7 +50,7 @@ day09b = MkSol
     , sSolve = \xs -> Just
         let -- map of points to their associated low points after flowing
             -- all the way downhill
-            res   = flip M.mapWithKey (flowMap xs) \p -> \case
+            res = flip M.mapWithKey (flowMap xs) \p -> \case
               Nothing -> p
               Just q  -> res M.! q
         in  product . take 3 . sortBy (flip compare) . toList $ freqs res
