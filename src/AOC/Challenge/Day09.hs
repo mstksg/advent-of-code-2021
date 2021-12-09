@@ -45,54 +45,34 @@ import qualified Text.Megaparsec                as P
 import qualified Text.Megaparsec.Char           as P
 import qualified Text.Megaparsec.Char.Lexer     as PP
 
-day09a :: _ :~> _
+findLow :: Map Point Int -> [(Point, Int)]
+findLow mp = filter go . M.toList $ mp
+  where
+    go (p, i) = all isLow (cardinalNeighbs p)
+      where
+        isLow q = case M.lookup q mp of
+          Nothing -> True
+          Just j  -> j > i
+
+day09a :: Map Point Int :~> Int
 day09a = MkSol
-    { sParse = Just . parseAsciiMap (Just . digitToInt)
+    { sParse = Just . parseAsciiMap (mfilter (< 9) . digitToIntSafe)
     , sShow  = show
-    , sSolve = \xs -> Just . sum $ M.mapWithKey (go xs) xs
-    } 
-  where
-    go mp p i 
-        | and $ mapMaybe f (cardinalNeighbs p) = (i+1)
-        | otherwise = 0
-      where
-        f q = case M.lookup q mp of
-          Nothing -> Nothing
-          Just j -> Just $ j > i
--- cardinalNeighbs :: Point -> [Point]
+    , sSolve = Just . sum . map ((+ 1) . snd) . findLow . M.filter (< 9)
+    }
 
-
-    -- go xs = sum $ zipWith3 f xs (drop 1 xs) (drop 2 xs)
-    --   where
-    --     f a b c
-    --      | a > b && c > b = 1 + b
-    --      | otherwise = 0
-
-day09b :: _ :~> _
+day09b :: Map Point Int :~> Int
 day09b = MkSol
-    { sParse = Just . parseAsciiMap (Just . digitToInt)
+    { sParse = Just . parseAsciiMap (mfilter (< 9) . digitToIntSafe)
     , sShow  = show
-    , sSolve = \xs -> Just $
-        let lowpoints = M.keys $ M.filterWithKey (go xs) xs
-        in  product . take 3 . reverse . sort . map (S.size . floodFill (spreadout xs) . S.singleton) $ lowpoints
-    } 
+    , sSolve = \xs -> Just
+        let lowpoints   = fst <$> findLow xs
+            validPoints = M.keysSet xs
+        in  product
+              . take 3
+              . sortBy (flip compare)
+              . map (S.size . floodFill (spreadout validPoints) . S.singleton)
+              $ lowpoints
+    }
   where
-    go mp p i = and $ mapMaybe f (cardinalNeighbs p)
-      where
-        f q = case M.lookup q mp of
-          Nothing -> Nothing
-          Just j -> Just $ j > i
-    spreadout mp p = S.fromList . filter valid . cardinalNeighbs $ p
-      where
-        valid q = case M.lookup q mp of
-          Nothing -> False
-          Just i  -> i  /= 9
-
-
--- -- | Flood fill from a starting set
--- floodFill
---     :: Ord a
---     => (a -> Set a)     -- ^ Expansion (be sure to limit allowed points)
---     -> Set a            -- ^ Start points
---     -> Set a            -- ^ Flood filled
--- floodFill f = snd . floodFillCount f
+    spreadout valids = (`S.intersection` valids) . cardinalNeighbsSet
