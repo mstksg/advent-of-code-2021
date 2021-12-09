@@ -14,11 +14,11 @@ module AOC.Challenge.Day09 (
   , day09b
   ) where
 
-import           AOC.Common       (freqs, digitToIntSafe, firstJust)
+import           AOC.Common       (freqs, digitToIntSafe)
 import           AOC.Common.Point (Point, cardinalNeighbs, parseAsciiMap)
 import           AOC.Solver       ((:~>)(..))
 import           Control.Monad    (mfilter)
-import           Data.Foldable    (toList)
+import           Data.Foldable    (toList, find)
 import           Data.List        (sortBy)
 import           Data.Map         (Map)
 import qualified Data.Map         as M
@@ -29,9 +29,7 @@ findLows mp = filter go . M.toList $ mp
   where
     go (p, i) = all isLow (cardinalNeighbs p)
       where
-        isLow q = case M.lookup q mp of
-          Nothing -> True
-          Just j  -> j > i
+        isLow = maybe True (> i) . (`M.lookup` mp)
 
 day09a :: Map Point Int :~> Int
 day09a = MkSol
@@ -57,6 +55,6 @@ day09b = MkSol
 flowMap :: Map Point Int -> Map Point (Maybe Point)
 flowMap mp = M.mapWithKey go mp
   where
-    go p i = firstJust getGrad (cardinalNeighbs p)
+    go p i = find getGrad (cardinalNeighbs p)
       where
-        getGrad q = q <$ mfilter (< i) (M.lookup q mp)
+        getGrad = maybe False (< i) . (`M.lookup` mp)
