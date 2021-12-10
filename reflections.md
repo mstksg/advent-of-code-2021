@@ -415,21 +415,20 @@ that file instead!
 ```
 >> Day 05a
 benchmarking...
-time                 5.318 ms   (5.256 ms .. 5.390 ms)
-                     0.998 R²   (0.997 R² .. 0.999 R²)
-mean                 5.236 ms   (5.194 ms .. 5.298 ms)
-std dev              149.2 μs   (117.1 μs .. 207.5 μs)
-variance introduced by outliers: 12% (moderately inflated)
+time                 5.197 ms   (5.107 ms .. 5.278 ms)
+                     0.997 R²   (0.996 R² .. 0.999 R²)
+mean                 5.349 ms   (5.294 ms .. 5.445 ms)
+std dev              217.7 μs   (188.5 μs .. 263.7 μs)
+variance introduced by outliers: 21% (moderately inflated)
 
 * parsing and formatting times excluded
 
 >> Day 05b
 benchmarking...
-time                 11.37 ms   (11.19 ms .. 11.58 ms)
-                     0.997 R²   (0.995 R² .. 0.999 R²)
-mean                 11.48 ms   (11.36 ms .. 11.73 ms)
-std dev              417.9 μs   (285.5 μs .. 608.1 μs)
-variance introduced by outliers: 13% (moderately inflated)
+time                 23.19 ms   (23.07 ms .. 23.31 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 23.36 ms   (23.25 ms .. 23.52 ms)
+std dev              273.2 μs   (200.5 μs .. 368.6 μs)
 
 * parsing and formatting times excluded
 ```

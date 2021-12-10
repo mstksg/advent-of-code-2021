@@ -20,7 +20,7 @@ import           Control.Monad        ((<=<))
 import           Data.Foldable        (foldMap')
 import           Data.List            (tails)
 import           Data.List.Split      (splitOn)
-import           Data.Maybe           (mapMaybe)
+import           Data.Maybe           (mapMaybe, fromJust)
 import           GHC.Generics         (Generic)
 import           Linear.Matrix        (transpose)
 import           Linear.V2            (V2(..))
@@ -44,13 +44,22 @@ classify :: V2 Point -> Maybe Line
 classify ((fmap . fmap) fromIntegral->V2 (V2 x1 y1) (V2 x2 y2))
     | x1 == x2 = Just $ Line Vert x1 (fromTo y1 y2)
     | y1 == y2 = Just $ Line Horiz y1 (fromTo x1 x2)
-    | (x1-y1) == (x2-y2) = Just $ Line Upwards (x1-y1) (fromTo y1 y2)
-    | (x1+y1) == (x2+y2) = Just $ Line Downwards (x1+y1) (fromTo y1 y2)
+    | (x1+y1) == (x2+y2) = Just $ Line Upwards (x1+y1) (fromTo y1 y2)
+    | (x1-y1) == (x2-y2) = Just $ Line Downwards (x1-y1) (fromTo y1 y2)
     | otherwise = Nothing
   where
     fromTo a b
       | a <= b    = ER.Finite a I.<=..<= ER.Finite b
       | otherwise = ER.Finite b I.<=..<= ER.Finite a
+
+_unclassify :: Line -> V2 Point
+_unclassify (Line t a r) = fmap (fmap fromInteger) case t of
+    Horiz     -> V2 (V2 lb a) (V2 ub a)
+    Vert      -> V2 (V2 a lb) (V2 a ub)
+    Upwards   -> V2 (V2 (a-lb) lb) (V2 (a-ub) ub)
+    Downwards -> V2 (V2 (a+lb) lb) (V2 (a+ub) ub)
+  where
+    (lb, ub) = fromJust $ intervalBounds r
 
 parseLine :: String -> Maybe (V2 Point)
 parseLine = (traverse . traverse) readMaybe
@@ -64,8 +73,7 @@ day05 preFilter = MkSol
         ls <- traverse classify (preFilter xs)
         let bigONSquaredSearch = foldMap' S.fromList do
               l:ls' <- tails ls
-              l'    <- ls'
-              pure $ overlaps l l'
+              overlaps l <$> ls'
         pure $ S.size bigONSquaredSearch
     }
 
@@ -112,74 +120,54 @@ overlaps :: Line -> Line -> [V2 Integer]
 overlaps = \case
     Line Horiz y1 rx1 -> \case
       Line Horiz y2 rx2
-        | y1 == y2 ->
-            let rx3 = I.intersection rx1 rx2
-            in  case (I.lowerBound rx3, I.upperBound rx3) of
-                  (ER.Finite a, ER.Finite b) -> (`V2` y1) <$> [a..b]
-                  _                          -> []
-        | otherwise -> []
+        | y1 == y2
+        , Just (a, b) <- intervalBounds (I.intersection rx1 rx2) -> (`V2` y1) <$> [a..b]
       Line Vert x2 ry2
         | y1 `I.member` ry2 && x2 `I.member` rx1 -> [V2 x2 y1]
-        | otherwise -> []
       Line Upwards z2 rt2
         | y1 `I.member` rt2 && (z2 - y1) `I.member` rx1 -> [V2 (z2-y1) y1]
-        | otherwise -> []
       Line Downwards z2 rt2
         | y1 `I.member` rt2 && (z2 + y1) `I.member` rx1 -> [V2 (z2+y1) y1]
-        | otherwise -> []
+      _ -> []
     Line Vert x1 ry1 -> \case
       Line Horiz y2 rx2
         | x1 `I.member` rx2 && y2 `I.member` ry1 -> [V2 x1 y2]
-        | otherwise -> []
       Line Vert x2 ry2
-        | x1 == x2 ->
-            let ry3 = I.intersection ry1 ry2
-            in  case (I.lowerBound ry3, I.upperBound ry3) of
-                  (ER.Finite a, ER.Finite b) -> V2 x1 <$> [a..b]
-                  _                          -> []
-        | otherwise -> []
+        | x1 == x2
+        , Just (a, b) <- intervalBounds (I.intersection ry1 ry2) -> V2 x1 <$> [a..b]
       Line Upwards z2 rt2
         | (z2 - x1) `I.member` rt2 && (z2 - x1) `I.member` ry1 -> [V2 x1 (z2-x1)]
-        | otherwise -> []
       Line Downwards z2 rt2
         | (x1 - z2) `I.member` rt2 && (x1 - z2) `I.member` ry1 -> [V2 x1 (x1-z2)]
-        | otherwise -> []
+      _ -> []
     Line Upwards z1 rt1 -> \case
       Line Horiz y2 rx2
         | y2 `I.member` rt1 && (z1 - y2) `I.member` rx2 -> [V2 (z1-y2) y2]
-        | otherwise -> []
       Line Vert x2 ry2
         | (z1 - x2) `I.member` rt1 && (z1 - x2) `I.member` ry2 -> [V2 x2 (z1-x2)]
-        | otherwise -> []
       Line Upwards z2 rt2
-        | z1 == z2 ->
-            let rt3 = I.intersection rt1 rt2
-            in  case (I.lowerBound rt3, I.upperBound rt3) of
-                  (ER.Finite a, ER.Finite b) -> (\t -> V2 (z1-t) t) <$> [a..b]
-                  _                          -> []
-        | otherwise -> []
-      Line Downwards z2 rt2 ->
-        let (t, rm) = (z1 - z2) `divMod` 2
-        in  if rm == 0 && t `I.member` rt1 && t `I.member` rt2
-              then [V2 (z1-t) t]
-              else []
+        | z1 == z2
+        , Just (a, b) <- intervalBounds (I.intersection rt1 rt2) -> (\t -> V2 (z1-t) t) <$> [a..b]
+      Line Downwards z2 rt2
+        | let (t, rm) = (z1 - z2) `divMod` 2
+        , rm == 0, t `I.member` rt1, t `I.member` rt2 -> [V2 (z1-t) t]
+      _ -> []
     Line Downwards z1 rt1 -> \case
       Line Horiz y2 rx2
         | y2 `I.member` rt1 && (z1 + y2) `I.member` rx2 -> [V2 (z1+y2) y2]
-        | otherwise -> []
       Line Vert x2 ry2
         | (x2 - z1) `I.member` rt1 && (x2 - z1) `I.member` ry2 -> [V2 x2 (x2-z1)]
-        | otherwise -> []
-      Line Upwards z2 rt2 ->
-        let (t, rm) = (z2 - z1) `divMod` 2
-        in  if rm == 0 && t `I.member` rt1 && t `I.member` rt2
-              then [V2 (z1+t) t]
-              else []
+      Line Upwards z2 rt2
+        | let (t, rm) = (z2 - z1) `divMod` 2
+        , rm == 0, t `I.member` rt1, t `I.member` rt2 -> [V2 (z1+t) t]
       Line Downwards z2 rt2
-        | z1 == z2 ->
-            let rt3 = I.intersection rt1 rt2
-            in  case (I.lowerBound rt3, I.upperBound rt3) of
-                  (ER.Finite a, ER.Finite b) -> (\t -> V2 (z1+t) t) <$> [a..b]
-                  _                          -> []
-        | otherwise -> []
+        | z1 == z2
+        , Just (a, b) <- intervalBounds (I.intersection rt1 rt2) -> (\t -> V2 (z1+t) t) <$> [a..b]
+      _ -> []
+
+intervalBounds :: I.IntegerInterval -> Maybe (Integer, Integer)
+intervalBounds i = do
+    ER.Finite a <- pure $ I.lowerBound i
+    ER.Finite b <- pure $ I.upperBound i
+    pure (a, b)
 
