@@ -30,6 +30,7 @@ Table of Contents
 * [Day 7](#day-7) *(no reflection yet)*
 * [Day 8](#day-8) *(no reflection yet)*
 * [Day 9](#day-9) *(no reflection yet)*
+* [Day 10](#day-10) *(no reflection yet)*
 
 Day 1
 ------
@@ -598,6 +599,49 @@ time                 7.241 ms   (7.209 ms .. 7.271 ms)
                      1.000 R²   (0.999 R² .. 1.000 R²)
 mean                 7.314 ms   (7.292 ms .. 7.354 ms)
 std dev              82.86 μs   (58.27 μs .. 124.0 μs)
+
+* parsing and formatting times excluded
+```
+
+
+
+Day 10
+------
+
+<!--
+This section is generated and compiled by the build script at ./Build.hs from
+the file `./reflections/day10.md`.  If you want to edit this, edit
+that file instead!
+-->
+
+*[Prompt][d10p]* / *[Code][d10g]* / *[Rendered][d10h]* / *[Standalone Reflection Page][d10r]*
+
+[d10p]: https://adventofcode.com/2021/day/10
+[d10g]: https://github.com/mstksg/advent-of-code-2021/blob/master/src/AOC/Challenge/Day10.hs
+[d10h]: https://mstksg.github.io/advent-of-code-2021/src/AOC.Challenge.Day10.html
+[d10r]: https://github.com/mstksg/advent-of-code-2021/blob/master/reflections-out/day10.md
+
+*Reflection not yet written -- please check back later!*
+
+### Day 10 Benchmarks
+
+```
+>> Day 10a
+benchmarking...
+time                 66.77 μs   (60.77 μs .. 70.87 μs)
+                     0.974 R²   (0.973 R² .. 0.985 R²)
+mean                 60.28 μs   (58.91 μs .. 62.63 μs)
+std dev              6.267 μs   (4.142 μs .. 8.292 μs)
+variance introduced by outliers: 84% (severely inflated)
+
+* parsing and formatting times excluded
+
+>> Day 10b
+benchmarking...
+time                 67.56 μs   (67.48 μs .. 67.65 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 67.64 μs   (67.51 μs .. 68.10 μs)
+std dev              776.5 ns   (188.6 ns .. 1.601 μs)
 
 * parsing and formatting times excluded
 ```
