@@ -22,8 +22,8 @@
 --     will recommend what should go in place of the underscores.
 
 module AOC.Challenge.Day10 (
-    -- day10a
-  -- , day10b
+    day10a
+  , day10b
   ) where
 
 import           AOC.Prelude
@@ -47,14 +47,63 @@ import qualified Text.Megaparsec.Char.Lexer     as PP
 
 day10a :: _ :~> _
 day10a = MkSol
-    { sParse = Just . lines
+    { sParse = mapMaybeLinesJust Just
     , sShow  = show
-    , sSolve = Just
+    , sSolve = Just . sum . map countScore
     }
+  where
+    countScore = go []
+      where
+        go [] (')':_) = 3
+        go [] (']':_) = 57
+        go [] ('}':_) = 1197
+        go [] ('>':_) = 25137
+        go (s:ss) (')':xs) = if s == '(' then go ss xs else 3
+        go (s:ss) (']':xs) = if s == '[' then go ss xs else 57
+        go (s:ss) ('}':xs) = if s == '{' then go ss xs else 1197
+        go (s:ss) ('>':xs) = if s == '<' then go ss xs else 25137
+        go ss ('(':xs) = go ('(':ss) xs
+        go ss ('[':xs) = go ('[':ss) xs
+        go ss ('{':xs) = go ('{':ss) xs
+        go ss ('<':xs) = go ('<':ss) xs
+        go [] [] = 0
+        go (_:_) [] = 0
+           
 
+    -- \case
+    --   '<':xs -> countAngle xs
+
+takeMid xs = xs !! n
+  where
+    n = length xs `div` 2
 day10b :: _ :~> _
 day10b = MkSol
     { sParse = sParse day10a
     , sShow  = show
-    , sSolve = Just
+    , sSolve = Just . takeMid . sort . map getScore . mapMaybe countScore
     }
+  where
+    getScore = go 0
+      where
+        go n ('(':xs) = go (n * 5 + 1) xs
+        go n ('[':xs) = go (n * 5 + 2) xs
+        go n ('{':xs) = go (n * 5 + 3) xs
+        go n ('<':xs) = go (n * 5 + 4) xs
+        go n [] = n
+        go n xs = error xs
+    countScore = go []
+      where
+        go [] (')':_) = Nothing
+        go [] (']':_) = Nothing
+        go [] ('}':_) = Nothing
+        go [] ('>':_) = Nothing
+        go (s:ss) (')':xs) = if s == '(' then go ss xs else Nothing
+        go (s:ss) (']':xs) = if s == '[' then go ss xs else Nothing
+        go (s:ss) ('}':xs) = if s == '{' then go ss xs else Nothing
+        go (s:ss) ('>':xs) = if s == '<' then go ss xs else Nothing
+        go ss ('(':xs) = go ('(':ss) xs
+        go ss ('[':xs) = go ('[':ss) xs
+        go ss ('{':xs) = go ('{':ss) xs
+        go ss ('<':xs) = go ('<':ss) xs
+        go [] [] = Nothing
+        go ss@(_:_) [] = Just ss
