@@ -22,8 +22,8 @@
 --     will recommend what should go in place of the underscores.
 
 module AOC.Challenge.Day11 (
-    -- day11a
-  -- , day11b
+    day11a
+  , day11b
   ) where
 
 import           AOC.Prelude
@@ -47,14 +47,65 @@ import qualified Text.Megaparsec.Char.Lexer     as PP
 
 day11a :: _ :~> _
 day11a = MkSol
-    { sParse = Just . lines
+    { sParse = Just . parseAsciiMap digitToIntSafe
+    -- { sParse = splitOn ","
+    -- , sShow  = ('\n':) . unlines . map (displayAsciiMap ' ' . fmap intToDigit . snd)
     , sShow  = show
-    , sSolve = Just
+    -- , sSolve = Just
+    -- , sSolve = Just . take 10 . iterate (realFullStep =<<) . (0,)
+    , sSolve = Just . (!!! 100) . doTheThing
     }
+
+realFullStep :: Map Point Int -> (Set Point, Map Point Int)
+realFullStep mp = (fl, mp'')
+  where
+    (fl, mp') = fullStep $ fmap (+1) mp
+    mp'' = M.unionWith const (M.fromSet (const 0) fl) mp'
+
+doTheThing :: Map Point Int -> [Int]
+doTheThing = go 0
+  where
+    go n mp = n : go (n + S.size q) mp'
+      where
+        (q, mp') = realFullStep mp
+
+fullStep :: Map Point Int -> (Set Point, Map Point Int)
+fullStep = go S.empty
+  where
+    go n mp
+        | S.null fl = (n, mp')
+        | otherwise = go (fl `S.union` n) mp'
+      where
+        (fl, mp') = runFlash n mp
+
+runFlash :: Set Point -> Map Point Int -> (Set Point, Map Point Int)
+runFlash alreadyFlashed mp = (readyToFlash, mp')
+  where
+    (yesFlash, noFlash) = M.partition (> 9) mp
+    readyToFlash = M.keysSet yesFlash
+    neighbs = (`M.restrictKeys` M.keysSet noFlash) . freqs $ foldMap fullNeighbs readyToFlash
+    mp' = M.unionWith (+) neighbs noFlash
+
+-- runFlash' :: Map Point Int -> (Set Point, Map Point Int)
+-- runFlash' mp = (neighbs, mp')
+--   where
+--     readyToFlash = M.keysSet (M.filter (> 9) mp)
+--     neighbs = foldMap fullNeighbsSet readyToFlash `S.intersection` M.keysSet mp
+--     mp' = M.unionWith (+) (M.fromSet (const 1) neighbs) mp
+--     -- mp' = M.unionWith (+) (M.fromSet (const 1) neighbs) mp
+--     -- -- mp'' = M.unionWith const (M.fromSet (const 0) readyToFlash) mp'
+
+doTheThing2 :: Map Point Int -> [Set Point]
+doTheThing2 mp = q : doTheThing2 mp'
+  where
+    (q, mp') = realFullStep mp
+
 
 day11b :: _ :~> _
 day11b = MkSol
     { sParse = sParse day11a
     , sShow  = show
-    , sSolve = Just
+    , sSolve = \mp ->
+        firstJust (\(i, q) -> i <$ guard (q == M.keysSet mp )
+          ) . zip [1..] . doTheThing2 $ mp
     }
