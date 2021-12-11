@@ -48,7 +48,7 @@ haddocks][haddock] --- more info below!
 | Day  8    |             | [x][d08g] | [x][d08h]  | [x][d08b]  |
 | Day  9    |             | [x][d09g] | [x][d09h]  | [x][d09b]  |
 | Day 10    |             | [x][d10g] | [x][d10h]  | [x][d10b]  |
-| Day 11    |             |           |            |            |
+| Day 11    |             | [x][d11g] | [x][d11h]  | [x][d11b]  |
 | Day 12    |             |           |            |            |
 | Day 13    |             |           |            |            |
 | Day 14    |             |           |            |            |
@@ -327,3 +327,6 @@ All networking features are powered by *[advent-of-code-api][]*.
 [d10g]: https://github.com/mstksg/advent-of-code-2021/blob/master/src/AOC/Challenge/Day10.hs
 [d10h]: https://mstksg.github.io/advent-of-code-2021/src/AOC.Challenge.Day10.html
 [d10b]: https://github.com/mstksg/advent-of-code-2021/blob/master/reflections.md#day-10-benchmarks
+[d11g]: https://github.com/mstksg/advent-of-code-2021/blob/master/src/AOC/Challenge/Day11.hs
+[d11h]: https://mstksg.github.io/advent-of-code-2021/src/AOC.Challenge.Day11.html
+[d11b]: https://github.com/mstksg/advent-of-code-2021/blob/master/reflections.md#day-11-benchmarks
