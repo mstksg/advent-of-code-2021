@@ -37,8 +37,8 @@ runSymbols = go []
   where
     go stk = \case
       Symbol Close b:xs -> case stk of
-        s:ss | s == b    -> go ss xs
-        _                -> Left b
+        s:ss | s == b -> go ss xs
+        _             -> Left b
       Symbol Open b:xs  -> go (b:stk) xs
       []                -> Right stk
 
@@ -80,8 +80,8 @@ day10b = MkSol
     getScore :: [Bracket] -> Int
     getScore = go 0
       where
-        go n (b:xs) = go (n * 5 + bracketScore b) xs
-        go n [] = n
+        go !n (b:xs) = go (n * 5 + bracketScore b) xs
+        go !n [] = n
     bracketScore = \case
       Round  -> 1
       Square -> 2
