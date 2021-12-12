@@ -45,56 +45,48 @@ import qualified Text.Megaparsec                as P
 import qualified Text.Megaparsec.Char           as P
 import qualified Text.Megaparsec.Char.Lexer     as PP
 
-day12a :: _ :~> _
+-- False: small
+-- True: large
+toAdjMatrix :: [(String, String)] -> Map String [(Bool, String)]
+toAdjMatrix = fmap (mapMaybe postProcess)
+            . M.fromListWith (++)
+            . concatMap (uncurry buildLinks)
+  where
+    buildLinks a b = [(a, [b]), (b, [a])]
+    postProcess str = (all isUpper str, str) <$ guard (str /= "start")
+
+day12a :: [(String, String)] :~> Int
 day12a = MkSol
-    { sParse = mapMaybeLinesJust $ \xs -> case splitOn "-" xs of
-            [a,b] -> Just (a, b)
+    { sParse = traverseLines $ listTup . splitOn "-"
     , sShow  = show
-    , sSolve = \xs ->  Just
-        let allPaths = M.fromListWith (++) $ concatMap (\(a,b) -> [(a,[b]),(b,[a])]) xs
-        in  S.size . S.fromList $ findPaths allPaths
+    , sSolve = Just . length . findPaths . toAdjMatrix
     }
 
-findPaths :: Map String [String] -> [[String]]
+findPaths :: Map String [(Bool, String)] -> [[String]]
 findPaths mp = go S.empty "start"
   where
     go seen currPos
-      | currPos == "end" = [["end"]]
+      | currPos == "end" = pure ["end"]
       | otherwise = do
-          nextBranch <- mp M.! currPos
-          guard $ nextBranch /= "start"
-          guard $ if isSmall nextBranch
-            then nextBranch `S.notMember` seen
-            else True
+          (isLarge, nextBranch) <- mp M.! currPos
+          guard $ isLarge || (nextBranch `S.notMember` seen)
           (currPos:) <$> go (S.insert nextBranch seen) nextBranch
 
-
-isSmall = all isLower
-
-
-
-day12b :: _ :~> _
+day12b :: [(String, String)] :~> Int
 day12b = MkSol
     { sParse = sParse day12a
     , sShow  = show
-    , sSolve = \xs ->  Just
-        let allPaths = M.fromListWith (++) $ concatMap (\(a,b) -> [(a,[b]),(b,[a])]) xs
-        in  S.size . S.fromList $ findPaths2 allPaths
+    , sSolve = Just . length . findPaths2 . toAdjMatrix
     }
 
-findPaths2 :: Map String [String] -> [[String]]
+findPaths2 :: Map String [(Bool, String)] -> [[String]]
 findPaths2 mp = go S.empty Nothing "start"
   where
     go seen seenTwice currPos
-      | currPos == "end" = [["end"]]
+      | currPos == "end" = pure ["end"]
       | otherwise = do
-          nextBranch <- mp M.! currPos
-          guard $ nextBranch /= "start"
-          newSeenTwice <- if isSmall nextBranch
-            then if nextBranch `S.member` seen
-              then case seenTwice of
-                        Nothing -> [Just nextBranch]
-                        Just _  -> []
-              else [seenTwice]
-            else [seenTwice]
+          (isLarge, nextBranch) <- mp M.! currPos
+          newSeenTwice <- if not isLarge && (nextBranch `S.member` seen)
+            then Just nextBranch <$ guard (isNothing seenTwice)
+            else pure seenTwice
           (currPos:) <$> go (S.insert nextBranch seen) newSeenTwice nextBranch
