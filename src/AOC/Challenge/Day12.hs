@@ -22,8 +22,8 @@
 --     will recommend what should go in place of the underscores.
 
 module AOC.Challenge.Day12 (
-    -- day12a
-  -- , day12b
+    day12a
+  , day12b
   ) where
 
 import           AOC.Prelude
@@ -47,14 +47,54 @@ import qualified Text.Megaparsec.Char.Lexer     as PP
 
 day12a :: _ :~> _
 day12a = MkSol
-    { sParse = Just . lines
+    { sParse = mapMaybeLinesJust $ \xs -> case splitOn "-" xs of
+            [a,b] -> Just (a, b)
     , sShow  = show
-    , sSolve = Just
+    , sSolve = \xs ->  Just
+        let allPaths = M.fromListWith (++) $ concatMap (\(a,b) -> [(a,[b]),(b,[a])]) xs
+        in  S.size . S.fromList $ findPaths allPaths
     }
+
+findPaths :: Map String [String] -> [[String]]
+findPaths mp = go S.empty "start"
+  where
+    go seen currPos
+      | currPos == "end" = [["end"]]
+      | otherwise = do
+          nextBranch <- mp M.! currPos
+          guard $ nextBranch /= "start"
+          guard $ if isSmall nextBranch
+            then nextBranch `S.notMember` seen
+            else True
+          (currPos:) <$> go (S.insert nextBranch seen) nextBranch
+
+
+isSmall = all isLower
+
+
 
 day12b :: _ :~> _
 day12b = MkSol
     { sParse = sParse day12a
     , sShow  = show
-    , sSolve = Just
+    , sSolve = \xs ->  Just
+        let allPaths = M.fromListWith (++) $ concatMap (\(a,b) -> [(a,[b]),(b,[a])]) xs
+        in  S.size . S.fromList $ findPaths2 allPaths
     }
+
+findPaths2 :: Map String [String] -> [[String]]
+findPaths2 mp = go S.empty Nothing "start"
+  where
+    go seen seenTwice currPos
+      | currPos == "end" = [["end"]]
+      | otherwise = do
+          nextBranch <- mp M.! currPos
+          guard $ nextBranch /= "start"
+          newSeenTwice <- if isSmall nextBranch
+            then if nextBranch `S.member` seen
+              then case seenTwice of
+                        Nothing -> [Just nextBranch]
+                        Just _  -> []
+              else [seenTwice]
+            else [seenTwice]
+          (currPos:) <$> go (S.insert nextBranch seen) newSeenTwice nextBranch
