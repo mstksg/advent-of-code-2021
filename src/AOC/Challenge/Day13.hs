@@ -30,6 +30,7 @@ import           AOC.Prelude
 
 import qualified Data.Graph.Inductive           as G
 import qualified Data.IntMap                    as IM
+import Advent.OCR
 import qualified Data.IntSet                    as IS
 import qualified Data.List.NonEmpty             as NE
 import qualified Data.List.PointedList          as PL
@@ -77,13 +78,13 @@ day13b = MkSol
                 <=< listTup . splitOn "\n\n"
     -- , sShow  = unlines . map (displayAsciiSet '.' '#' . NES.toSet) . toList . contiguousShapes
     -- , sShow = show
-    , sShow = NE.head . parseLettersAll
+    , sShow = fromJust . parseLettersWith (view _x) (view _y)
 -- parseLettersAll
 --     :: Set Point
 --     -> NonEmpty String
     , sSolve = \(ptList, folds) -> Just
         let ptSet = S.fromList ptList
-        in  foldr go ptSet (reverse folds)
+        in  foldl' (flip go) ptSet folds
     }
   where
     parseFold ax v = do
