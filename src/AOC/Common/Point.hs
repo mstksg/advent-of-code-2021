@@ -40,6 +40,8 @@ module AOC.Common.Point (
   , inBoundingBox
   , minCorner, minCorner'
   , contiguousRegions
+  , contiguousShapes
+  , contiguousShapesBy
   , shiftToZero
   , shiftToZero'
   , parseAsciiMap
@@ -48,6 +50,9 @@ module AOC.Common.Point (
   , ScanPoint(..)
   , displayAsciiMap
   , displayAsciiSet
+  -- ** OCR
+  , parseLetters
+  , parseLettersSafe
   -- * Util
   , centeredFinite
   ) where
@@ -65,6 +70,7 @@ import           Data.Hashable
 import           Data.List.NonEmpty      (NonEmpty(..))
 import           Data.Map                (Map)
 import           Data.Map.Lens
+import           Data.Maybe
 import           Data.MemoCombinators    (Memo)
 import           Data.Monoid
 import           Data.Ord
@@ -79,6 +85,8 @@ import           Data.Tuple.Strict
 import           GHC.Generics
 import           GHC.TypeNats
 import           Linear
+import qualified Advent.OCR              as OCR
+import qualified Control.Foldl           as F
 import qualified Data.List.NonEmpty      as NE
 import qualified Data.Map                as M
 import qualified Data.Map.NonEmpty       as NEM
@@ -175,7 +183,7 @@ fullNeighbsSet p = S.fromDistinctAscList $
 -- | Find contiguous regions by cardinal neighbors
 contiguousRegions
     :: Set Point
-    -> Set (Set Point)
+    -> Set (NESet Point)
 contiguousRegions = startNewPool S.empty
   where
     startNewPool seenPools remaining = case S.minView remaining of
@@ -185,12 +193,32 @@ contiguousRegions = startNewPool S.empty
         in  startNewPool (S.insert newPool seenPools) remaining'
     fillUp boundary internal remaining = case NES.nonEmptySet newBoundary of
         Nothing -> (newInternal, remaining)
-        Just nb -> fillUp nb newInternal newRemaining
+        Just nb -> fillUp nb (NES.toSet newInternal) newRemaining
       where
         edgeCandidates = foldMap' cardinalNeighbsSet boundary `S.difference` internal
         newBoundary = edgeCandidates `S.intersection` remaining
-        newInternal = internal `S.union` NES.toSet boundary
+        newInternal = NES.withNonEmpty id NES.union internal boundary
         newRemaining = remaining `S.difference` edgeCandidates
+
+-- | The set of unconnected shapes, indexed by their original center of
+-- mass
+contiguousShapes :: Set Point -> Map (V2 Double) (NESet Point)
+contiguousShapes s0 = M.fromList
+    [ (com, NES.map (subtract topCorner) s)
+    | s <- S.toList $ contiguousRegions s0
+    , let com            = F.fold ((lmap . fmap) fromIntegral F.mean) s
+          V2 topCorner _ = boundingBox s
+    ]
+
+-- | The set of unconnected shapes, sorted against some function on their
+-- original center of masses
+contiguousShapesBy
+    :: Ord a
+    => (V2 Double -> a)
+    -> Set Point
+    -> [NESet Point]
+contiguousShapesBy f = toList . M.mapKeys f . contiguousShapes
+
 
 memoPoint :: Memo Point
 memoPoint = Memo.wrap (uncurry V2) (\(V2 x y) -> (x, y)) $
@@ -405,6 +433,16 @@ displayAsciiSet
     -> Set Point -- ^ tile set
     -> String
 displayAsciiSet x y = displayAsciiMap x . M.fromSet (const y)
+
+parseLetters
+    :: Set Point
+    -> String
+parseLetters = fromMaybe (error "parseLetters: no parse") . parseLettersSafe
+
+parseLettersSafe
+    :: Set Point
+    -> Maybe String
+parseLettersSafe = OCR.parseLettersWith (view _x) (view _y)
 
 -- | Lattice points for line between points, not including endpoints
 lineTo :: Point -> Point -> [Point]

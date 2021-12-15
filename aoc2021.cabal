@@ -185,7 +185,6 @@ library
       AOC.Challenge.Day25
       AOC.Common
       AOC.Common.FinitarySet
-      AOC.Common.OCR
       AOC.Common.Point
       AOC.Common.Search
       AOC.Discover
