@@ -22,8 +22,8 @@
 --     will recommend what should go in place of the underscores.
 
 module AOC.Challenge.Day15 (
-    -- day15a
-  -- , day15b
+    day15a
+  , day15b
   ) where
 
 import           AOC.Prelude
@@ -44,17 +44,48 @@ import qualified Linear                         as L
 import qualified Text.Megaparsec                as P
 import qualified Text.Megaparsec.Char           as P
 import qualified Text.Megaparsec.Char.Lexer     as PP
+import AOC.Common.Search
 
 day15a :: _ :~> _
 day15a = MkSol
-    { sParse = Just . lines
+    { sParse = Just . parseAsciiMap digitToIntSafe
     , sShow  = show
-    , sSolve = Just
+    , sSolve = \mp ->
+        let targ = fst $ M.findMax mp
+        in  fst <$> aStar
+                (mannDist targ)
+                (M.fromSet (\x -> mp M.! x) . (`S.intersection` M.keysSet mp) . cardinalNeighbsSet)
+                0
+                (== targ)
     }
+
+-- aStar
+--     :: forall n p. (Ord n, Ord p, Num p)
+--     => (n -> p)         -- ^ heuristic
+--     -> (n -> Map n p)   -- ^ neighborhood
+--     -> n                -- ^ start
+--     -> (n -> Bool)      -- ^ target
+--     -> Maybe (p, [n])   -- ^ the shortest path, if it exists, and its cost
 
 day15b :: _ :~> _
 day15b = MkSol
     { sParse = sParse day15a
     , sShow  = show
-    , sSolve = Just
+    , sSolve = \mp0 ->
+        let mp = M.fromList
+                [ (k', v')
+                | (k, v) <- M.toList mp0
+                , dx <- [0,1,2,3,4]
+                , dy <- [0,1,2,3,4]
+                , let k' = k + V2 (shifter * dx) (shifter * dy)
+                , let v' = ((v - 1 + dx+dy) `mod` 9) + 1
+                ]
+            corner = fst $ M.findMax mp0
+            V2 shifter _ = corner + 1
+            targ = fst $ M.findMax mp
+        in  fst <$> aStar
+                (mannDist targ)
+                (M.fromSet (\x -> mp M.! x) . (`S.intersection` M.keysSet mp) . cardinalNeighbsSet)
+                0
+                (== targ)
     }
