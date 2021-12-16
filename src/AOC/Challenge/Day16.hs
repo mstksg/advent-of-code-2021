@@ -12,19 +12,17 @@ module AOC.Challenge.Day16 (
   , day16b
   ) where
 
-import           AOC.Common               (TokStream(..), digitToIntSafe)
+import           AOC.Common               (TokStream(..), digitToIntSafe, parseBinary, toBinaryFixed)
 import           AOC.Solver               ((:~>)(..))
-import           AOC.Util                 (maybeAlt)
 import           Control.Applicative      (empty)
 import           Control.DeepSeq          (NFData)
-import           Control.Lens             (preview, review, _Right)
+import           Control.Lens             (preview, _Right)
 import           Control.Monad            (replicateM)
 import           Data.Bifunctor           (bimap)
 import           Data.Functor.Foldable    (cata)
 import           Data.Functor.Foldable.TH (makeBaseFunctor)
 import           Data.Void                (Void)
 import           GHC.Generics             (Generic)
-import           Numeric.Lens             (binary)
 import qualified Text.Megaparsec          as P
 
 type Version = Int
@@ -48,12 +46,10 @@ makeBaseFunctor ''Packet
 day16 :: Show a => (PacketF a -> a) -> TokStream Bool :~> a
 day16 alg = MkSol
     { sParse = Just . TokStream
-             . concatMap (maybe [] (padzero . map (== '1')) . fmap (review binary) . digitToIntSafe)
+             . concatMap (maybe [] id . fmap (toBinaryFixed 4) . digitToIntSafe)
     , sShow  = show
     , sSolve = fmap (cata alg . snd) . preview _Right . P.runParser parsePacket ""
     }
-  where
-    padzero xs = reverse . take 4 $ reverse xs ++ repeat False
 
 day16a :: TokStream Bool :~> Int
 day16a = day16 \case
@@ -85,7 +81,7 @@ type Parser = P.Parsec Void (TokStream Bool)
 -- includes the length of items parsed
 parsePacket :: Parser (Int, Packet)
 parsePacket = do
-    v <- bitToNumP =<< replicateM 3 P.anySingle
+    v <- parseBinary <$> replicateM 3 P.anySingle
     t <- parseType
     case t of
       Nothing -> bimap (+ 6) (Literal v) <$> parseLiteral
@@ -93,7 +89,7 @@ parsePacket = do
   where
     parseType :: Parser (Maybe Op)
     parseType = do
-      t <- bitToNumP =<< replicateM 3 P.anySingle
+      t <- parseBinary <$> replicateM 3 P.anySingle
       case t of
         0 -> pure $ Just OSum
         1 -> pure $ Just OProd
@@ -104,13 +100,10 @@ parsePacket = do
         6 -> pure $ Just OLT
         7 -> pure $ Just OEQ
         _ -> empty
-    bitToNumP :: [Bool] -> Parser Int
-    bitToNumP = maybeAlt . bitToNum
     parseLiteral :: Parser (Int, Int)
     parseLiteral = do
       n  <- parseLitChunks
-      pn <- bitToNumP (concat n)
-      pure (length n * 5, pn)
+      pure (length n * 5, parseBinary (concat n))
     parseLitChunks :: Parser [[Bool]]
     parseLitChunks = do
       goOn <- P.anySingle
@@ -123,11 +116,11 @@ parsePacket = do
       lt <- P.anySingle
       if lt
         then do
-          n <- bitToNumP =<< replicateM 11 P.anySingle
+          n <- parseBinary <$> replicateM 11 P.anySingle
           (len, ps) <- unzip <$> replicateM n parsePacket
           pure (sum len + 11 + 1, ps)
         else do
-          n  <- bitToNumP =<< replicateM 15 P.anySingle
+          n  <- parseBinary <$> replicateM 15 P.anySingle
           (n+1+15,) <$> parsePacketsLength n
     parsePacketsLength :: Int -> Parser [Packet]
     parsePacketsLength n = do
@@ -136,5 +129,3 @@ parsePacket = do
         then pure [p]
         else (p:) <$> parsePacketsLength (n-ln)
 
-bitToNum :: [Bool] -> Maybe Int
-bitToNum = preview binary . map (\case False -> '0'; True -> '1')

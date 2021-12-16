@@ -92,6 +92,9 @@ module AOC.Common (
   , decimalDigit
   , splitWord
   , digitToIntSafe
+  , toBinary
+  , toBinaryFixed
+  , parseBinary
   , caeser
   , eitherItem
   -- , getDown
@@ -393,6 +396,27 @@ charFinite (ord->c) = asum
 
 digitToIntSafe :: Char -> Maybe Int
 digitToIntSafe c = digitToInt c <$ guard (isDigit c || toLower c `elem` "abcdef")
+
+parseBinary :: [Bool] -> Int
+parseBinary = foldl' (\i b -> if b then i * 2 + 1 else i * 2) 0
+
+toBinary :: Int -> [Bool]
+toBinary x = go x []
+  where
+    go i = rest . ((b /= 0):)
+      where
+        (a, b) = i `divMod` 2
+        rest
+          | a == 0    = id
+          | otherwise = go a
+
+-- fixed number of digits, pad with 0
+toBinaryFixed :: Int -> Int -> [Bool]
+toBinaryFixed d x
+    | d <= 0    = []
+    | otherwise = (a /= 0) : toBinaryFixed (d-1) b
+  where
+    (a, b) = x `divMod` (2^(d-1))
 
 -- | Prism for a 'Char' as @('Bool', 'Finite' 26)@, where the 'Finite' is
 -- the letter parsed as a number from 0 to 25, and the 'Bool' is lowercase
