@@ -392,7 +392,7 @@ charFinite (ord->c) = asum
     ]
 
 digitToIntSafe :: Char -> Maybe Int
-digitToIntSafe c = digitToInt c <$ guard (isDigit c)
+digitToIntSafe c = digitToInt c <$ guard (isDigit c || toLower c `elem` "abcdef")
 
 -- | Prism for a 'Char' as @('Bool', 'Finite' 26)@, where the 'Finite' is
 -- the letter parsed as a number from 0 to 25, and the 'Bool' is lowercase

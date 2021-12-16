@@ -60,8 +60,8 @@ day14 n = MkSol
             compensate = M.fromList [(firstChar, 1), (lastChar, 1)]
             resFreqs   = M.unionWith (+) compensate . fmap (`div` 2) $ M.fromListWith (+)
               [ (k, v)
-              | ((x, y), n) <- M.toList res
-              , (k, v)      <- [(x,n),(y,n)]
+              | ((x, y), r) <- M.toList res
+              , (k, v)      <- [(x,r),(y,r)]
               ]
             resFreqList = sort $ toList resFreqs
         lowFreq  <- headMay resFreqList
@@ -71,10 +71,10 @@ day14 n = MkSol
   where
     expand rMap strPairs = M.fromListWith (+)
       [ (k, v)
-      | ((a, b), n) <- M.toList strPairs
+      | ((a, b), r) <- M.toList strPairs
       , (k, v) <- case M.lookup (a, b) rMap of
-          Nothing -> [ ((a, b), n) ]
-          Just q  -> [ ((a, q), n), ((q, b), n) ]
+          Nothing -> [ ((a, b), r) ]
+          Just q  -> [ ((a, q), r), ((q, b), r) ]
       ]
 
 day14a :: (String, [((Char, Char), Char)]) :~> Int
