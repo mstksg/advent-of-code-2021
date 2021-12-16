@@ -32,6 +32,8 @@ Table of Contents
 * [Day 9](#day-9) *(no reflection yet)*
 * [Day 10](#day-10) *(no reflection yet)*
 * [Day 11](#day-11) *(no reflection yet)*
+* [Day 15](#day-15) *(no reflection yet)*
+* [Day 16](#day-16) *(no reflection yet)*
 
 Day 1
 ------
@@ -685,6 +687,93 @@ time                 15.22 ms   (14.34 ms .. 16.29 ms)
 mean                 14.97 ms   (14.69 ms .. 15.47 ms)
 std dev              992.2 μs   (555.8 μs .. 1.562 ms)
 variance introduced by outliers: 31% (moderately inflated)
+
+* parsing and formatting times excluded
+```
+
+
+
+Day 15
+------
+
+<!--
+This section is generated and compiled by the build script at ./Build.hs from
+the file `./reflections/day15.md`.  If you want to edit this, edit
+that file instead!
+-->
+
+*[Prompt][d15p]* / *[Code][d15g]* / *[Rendered][d15h]* / *[Standalone Reflection Page][d15r]*
+
+[d15p]: https://adventofcode.com/2021/day/15
+[d15g]: https://github.com/mstksg/advent-of-code-2021/blob/master/src/AOC/Challenge/Day15.hs
+[d15h]: https://mstksg.github.io/advent-of-code-2021/src/AOC.Challenge.Day15.html
+[d15r]: https://github.com/mstksg/advent-of-code-2021/blob/master/reflections-out/day15.md
+
+*Reflection not yet written -- please check back later!*
+
+### Day 15 Benchmarks
+
+```
+>> Day 15a
+benchmarking...
+time                 61.55 ms   (60.33 ms .. 62.69 ms)
+                     0.999 R²   (0.997 R² .. 1.000 R²)
+mean                 60.96 ms   (60.51 ms .. 61.67 ms)
+std dev              1.050 ms   (753.2 μs .. 1.426 ms)
+
+* parsing and formatting times excluded
+
+>> Day 15b
+benchmarking...
+time                 2.338 s    (2.307 s .. 2.372 s)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 2.331 s    (2.316 s .. 2.339 s)
+std dev              14.04 ms   (1.157 ms .. 17.83 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+* parsing and formatting times excluded
+```
+
+
+
+Day 16
+------
+
+<!--
+This section is generated and compiled by the build script at ./Build.hs from
+the file `./reflections/day16.md`.  If you want to edit this, edit
+that file instead!
+-->
+
+*[Prompt][d16p]* / *[Code][d16g]* / *[Rendered][d16h]* / *[Standalone Reflection Page][d16r]*
+
+[d16p]: https://adventofcode.com/2021/day/16
+[d16g]: https://github.com/mstksg/advent-of-code-2021/blob/master/src/AOC/Challenge/Day16.hs
+[d16h]: https://mstksg.github.io/advent-of-code-2021/src/AOC.Challenge.Day16.html
+[d16r]: https://github.com/mstksg/advent-of-code-2021/blob/master/reflections-out/day16.md
+
+*Reflection not yet written -- please check back later!*
+
+### Day 16 Benchmarks
+
+```
+>> Day 16a
+benchmarking...
+time                 1.420 ms   (1.351 ms .. 1.535 ms)
+                     0.977 R²   (0.963 R² .. 0.995 R²)
+mean                 1.452 ms   (1.363 ms .. 1.678 ms)
+std dev              418.2 μs   (84.22 μs .. 896.7 μs)
+variance introduced by outliers: 97% (severely inflated)
+
+* parsing and formatting times excluded
+
+>> Day 16b
+benchmarking...
+time                 1.091 ms   (1.051 ms .. 1.145 ms)
+                     0.990 R²   (0.986 R² .. 0.996 R²)
+mean                 1.085 ms   (1.061 ms .. 1.111 ms)
+std dev              88.42 μs   (51.04 μs .. 118.5 μs)
+variance introduced by outliers: 64% (severely inflated)
 
 * parsing and formatting times excluded
 ```

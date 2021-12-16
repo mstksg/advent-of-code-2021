@@ -12,6 +12,13 @@ packages:
   original:
     hackage: advent-of-code-api-0.2.8.0
 - completed:
+    hackage: advent-of-code-ocr-0.1.2.0@sha256:86d2d6ea54072283dfb11ee0d1cc69db36da17578d85bc23d5a6cf8f57328256,2927
+    pantry-tree:
+      size: 614
+      sha256: 40abbd30800075fd8f38404b7950908f13f9425c071a96e2088ade46061a357c
+  original:
+    hackage: advent-of-code-ocr-0.1.2.0
+- completed:
     hackage: finitary-2.1.1.0@sha256:f0f19aace424e5fdb5543fbcfb9446e50c8cb349fe7564642c5c25dbe3418076,2743
     pantry-tree:
       size: 438

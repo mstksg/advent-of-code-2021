@@ -52,8 +52,8 @@ haddocks][haddock] --- more info below!
 | Day 12    |             |           |            |            |
 | Day 13    |             |           |            |            |
 | Day 14    |             |           |            |            |
-| Day 15    |             |           |            |            |
-| Day 16    |             |           |            |            |
+| Day 15    |             | [x][d15g] | [x][d15h]  | [x][d15b]  |
+| Day 16    |             | [x][d16g] | [x][d16h]  | [x][d16b]  |
 | Day 17    |             |           |            |            |
 | Day 18    |             |           |            |            |
 | Day 19    |             |           |            |            |
@@ -330,3 +330,9 @@ All networking features are powered by *[advent-of-code-api][]*.
 [d11g]: https://github.com/mstksg/advent-of-code-2021/blob/master/src/AOC/Challenge/Day11.hs
 [d11h]: https://mstksg.github.io/advent-of-code-2021/src/AOC.Challenge.Day11.html
 [d11b]: https://github.com/mstksg/advent-of-code-2021/blob/master/reflections.md#day-11-benchmarks
+[d15g]: https://github.com/mstksg/advent-of-code-2021/blob/master/src/AOC/Challenge/Day15.hs
+[d15h]: https://mstksg.github.io/advent-of-code-2021/src/AOC.Challenge.Day15.html
+[d15b]: https://github.com/mstksg/advent-of-code-2021/blob/master/reflections.md#day-15-benchmarks
+[d16g]: https://github.com/mstksg/advent-of-code-2021/blob/master/src/AOC/Challenge/Day16.hs
+[d16h]: https://mstksg.github.io/advent-of-code-2021/src/AOC.Challenge.Day16.html
+[d16b]: https://github.com/mstksg/advent-of-code-2021/blob/master/reflections.md#day-16-benchmarks
