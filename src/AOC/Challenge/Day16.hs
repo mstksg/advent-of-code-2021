@@ -106,16 +106,19 @@ parsePacket = do
         _ -> empty
     bitToNumP :: [Bool] -> Parser Int
     bitToNumP = maybeAlt . bitToNum
+    parseLiteral :: Parser (Int, Int)
     parseLiteral = do
       n  <- parseLitChunks
       pn <- bitToNumP (concat n)
       pure (length n * 5, pn)
+    parseLitChunks :: Parser [[Bool]]
     parseLitChunks = do
       goOn <- P.anySingle
       digs <- replicateM 4 P.anySingle
       if goOn
         then (digs:) <$> parseLitChunks
         else pure [digs]
+    parseOperator :: Parser (Int, [Packet])
     parseOperator = do
       lt <- P.anySingle
       if lt
@@ -126,6 +129,7 @@ parsePacket = do
         else do
           n  <- bitToNumP =<< replicateM 15 P.anySingle
           (n+1+15,) <$> parsePacketsLength n
+    parsePacketsLength :: Int -> Parser [Packet]
     parsePacketsLength n = do
       (ln, p) <- parsePacket
       if ln == n
