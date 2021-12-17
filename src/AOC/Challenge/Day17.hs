@@ -43,37 +43,64 @@ import qualified Data.Vector                    as V
 import qualified Linear                         as L
 import Safe
 import qualified Text.Megaparsec                as P
+import Data.Complex
 import qualified Text.Megaparsec.Char           as P
 import qualified Text.Megaparsec.Char.Lexer     as PP
 
-day17a :: [Int] :~> _
+parseBox :: String -> Maybe (V2 Point)
+parseBox = getBounds <=< traverse readMaybe . words . clearOut valid
+  where
+    valid k = not (isDigit k || k == '-')
+    getBounds = \case
+      [x1,x2,y1,y2] -> do
+        [xMin, xMax] <- pure $ sort [x1,x2]
+        [yMin, yMax] <- pure $ sort [y1,y2]
+        pure $ V2 (V2 xMin yMin) (V2 xMax yMax)
+      _ -> Nothing
+
+-- | Independent tight bounds for each axis
+velBounds :: V2 Point -> V2 Point
+velBounds (V2 (V2 x1 y1) (V2 x2 _)) = V2 (V2 vx1 y1) (V2 x2 (abs y1))
+  where
+    vx1 = case quadraticEq (-fromIntegral x1) 0.5 0.5 of
+      QReal a b    -> ceiling (max a b)
+      QSimul a     -> ceiling a
+      QComplex _ _ -> error "invalid box"
+
+data QuadraticSol = QReal    Double Double
+                  | QSimul   Double
+                  | QComplex (Complex Double) (Complex Double)
+
+quadraticEq :: Double -> Double -> Double -> QuadraticSol
+quadraticEq a b c = case compare discr 0 of
+    LT -> QComplex (term1 :+ term2) (term1 :+ (-term2))
+    EQ -> QSimul term1
+    GT -> QReal (term1 + term2) (term1 - term2)
+  where
+    discr = b*b - 4 * a * c
+    term1 = -0.5*b/a
+    term2 = 0.5 * sqrt (abs discr) / a
+
+day17a :: V2 Point :~> _
 day17a = MkSol
-    { sParse = traverse readMaybe . words . clearOut (\k -> not (isDigit k || k == '-'))
+    { sParse = parseBox
     , sShow  = show
-    , sSolve = \[x1,x2,y1,y2] -> maximumMay
-        [ mx
-        | x <- [-100.. 100]
-        , y <- [-100.. 100]
-        , let steps = stepUntilTooDeep (min y1 y2) (V2 x y)
-        , any (inBoundingBox (V2 (V2 (min x1 x2) (min y1 y2)) (V2 (max x1 x2) (max y1 y2))))
-                    steps
-        , Just mx <- [maximumMay (map (view _y) steps)]
-        ]
--- exponentialSearch
--- inBoundingBox
---     :: (Applicative g, Foldable g, Ord a)
---     => V2 (g a)
---     -> g a
---     -> Bool
---     :: (Int -> Ordering)        -- LT: Too small, GT: Too big
---     -> Int
---     -> Maybe Int
+    , sSolve = \(bbox@(V2 (V2 _ y1) (V2 x2 _))) ->
+        let V2 (V2 vx1 vy1) (V2 vx2 vy2) = velBounds bbox
+        in  maximumMay
+              [ mx
+              | x <- [vx1..vx2]
+              , y <- [vy1..vy2]
+              , let steps = stepUntilTooDeep x2 y1 (V2 x y)
+              , any (inBoundingBox bbox) steps
+              , Just mx <- [maximumMay (map (view _y) steps)]
+              ]
     }
 
-stepUntilTooDeep :: Int -> Point -> [Point]
-stepUntilTooDeep ymin v0 = map fst . takeWhile p $ iterate simStep (0, v0)
+stepUntilTooDeep :: Int -> Int -> Point -> [Point]
+stepUntilTooDeep xmax ymin v0 = map fst . takeWhile p $ iterate simStep (0, v0)
   where
-    p (V2 _ y, _) = y >= ymin
+    p (V2 x y, _) = y >= ymin && x <= xmax
 
 simStep :: (Point, Point) -> (Point, Point)
 simStep (pos, vel@(V2 vx vy)) = (pos + vel, vel')
@@ -82,17 +109,15 @@ simStep (pos, vel@(V2 vx vy)) = (pos + vel, vel')
 
 -- target area: x=248..285, y=-85..-56
 
-day17b :: _ :~> _
+day17b :: V2 Point :~> _
 day17b = MkSol
     { sParse = sParse day17a
-    , sShow  = show
-    , sSolve = \[x1,x2,y1,y2] -> Just $ length
-        [ mx
-        | x <- [-500.. 500]
-        , y <- [-500.. 500]
-        , let steps = stepUntilTooDeep (min y1 y2) (V2 x y)
-        , any (inBoundingBox (V2 (V2 (min x1 x2) (min y1 y2)) (V2 (max x1 x2) (max y1 y2))))
-                    steps
-        , Just mx <- [maximumMay (map (view _y) steps)]
-        ]
+    , sShow = show
+    , sSolve = \(bbox@(V2 (V2 _ y1) (V2 x2 _))) ->
+        let V2 (V2 vx1 vy1) (V2 vx2 vy2) = velBounds bbox
+        in  Just $ countTrue (any (inBoundingBox bbox))
+              [ stepUntilTooDeep x2 y1 (V2 x y)
+              | x <- [vx1..vx2]
+              , y <- [vy1..vy2]
+              ]
     }
