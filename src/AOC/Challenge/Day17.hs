@@ -22,8 +22,8 @@
 --     will recommend what should go in place of the underscores.
 
 module AOC.Challenge.Day17 (
-    -- day17a
-  -- , day17b
+    day17a
+  , day17b
   ) where
 
 import           AOC.Prelude
@@ -41,20 +41,58 @@ import qualified Data.Set                       as S
 import qualified Data.Text                      as T
 import qualified Data.Vector                    as V
 import qualified Linear                         as L
+import Safe
 import qualified Text.Megaparsec                as P
 import qualified Text.Megaparsec.Char           as P
 import qualified Text.Megaparsec.Char.Lexer     as PP
 
-day17a :: _ :~> _
+day17a :: [Int] :~> _
 day17a = MkSol
-    { sParse = Just . lines
+    { sParse = traverse readMaybe . words . clearOut (\k -> not (isDigit k || k == '-'))
     , sShow  = show
-    , sSolve = Just
+    , sSolve = \[x1,x2,y1,y2] -> maximumMay
+        [ mx
+        | x <- [-100.. 100]
+        , y <- [-100.. 100]
+        , let steps = stepUntilTooDeep (min y1 y2) (V2 x y)
+        , any (inBoundingBox (V2 (V2 (min x1 x2) (min y1 y2)) (V2 (max x1 x2) (max y1 y2))))
+                    steps
+        , Just mx <- [maximumMay (map (view _y) steps)]
+        ]
+-- exponentialSearch
+-- inBoundingBox
+--     :: (Applicative g, Foldable g, Ord a)
+--     => V2 (g a)
+--     -> g a
+--     -> Bool
+--     :: (Int -> Ordering)        -- LT: Too small, GT: Too big
+--     -> Int
+--     -> Maybe Int
     }
+
+stepUntilTooDeep :: Int -> Point -> [Point]
+stepUntilTooDeep ymin v0 = map fst . takeWhile p $ iterate simStep (0, v0)
+  where
+    p (V2 _ y, _) = y >= ymin
+
+simStep :: (Point, Point) -> (Point, Point)
+simStep (pos, vel@(V2 vx vy)) = (pos + vel, vel')
+  where
+    vel' = V2 (vx - signum vx) (vy - 1)
+
+-- target area: x=248..285, y=-85..-56
 
 day17b :: _ :~> _
 day17b = MkSol
     { sParse = sParse day17a
     , sShow  = show
-    , sSolve = Just
+    , sSolve = \[x1,x2,y1,y2] -> Just $ length
+        [ mx
+        | x <- [-500.. 500]
+        , y <- [-500.. 500]
+        , let steps = stepUntilTooDeep (min y1 y2) (V2 x y)
+        , any (inBoundingBox (V2 (V2 (min x1 x2) (min y1 y2)) (V2 (max x1 x2) (max y1 y2))))
+                    steps
+        , Just mx <- [maximumMay (map (view _y) steps)]
+        ]
     }
